@@ -1,0 +1,24 @@
+android {
+    // ... existing config ...
+
+    defaultConfig {
+        // ... existing config ...
+        
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++17"
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+        }
+    }
+}
+
+dependencies {
+    // ... existing dependencies ...
+} 

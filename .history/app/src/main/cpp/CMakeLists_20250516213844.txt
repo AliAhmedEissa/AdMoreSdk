@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 3.4.1)
+
+# Add OpenSSL
+find_library(OPENSSL_LIB crypto REQUIRED)
+
+# Add the library
+add_library(admore-keystore SHARED
+            key_store_jni.cpp
+            key_store.cpp)
+
+# Include directories
+target_include_directories(admore-keystore PRIVATE
+                         ${CMAKE_CURRENT_SOURCE_DIR})
+
+# Link libraries
+target_link_libraries(admore-keystore
+                     ${OPENSSL_LIB}
+                     android
+                     log) 
