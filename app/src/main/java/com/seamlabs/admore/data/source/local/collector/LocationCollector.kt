@@ -15,7 +15,10 @@ import javax.inject.Inject
  */
 class LocationCollector @Inject constructor(
     context: Context
-) : PermissionRequiredCollector(context, Permission.LOCATION_FINE) {
+) : PermissionRequiredCollector(
+    context,
+    setOf(Permission.LOCATION_FINE, Permission.LOCATION_COARSE)
+) {
 
     override fun isPermissionGranted(): Boolean {
         return ContextCompat.checkSelfPermission(

@@ -1,7 +1,6 @@
 // File: com.seamlabs.admore/data/repository/EventRepositoryImpl.kt
 package com.seamlabs.admore.data.repository
 
-import android.util.Log
 import com.seamlabs.admore.core.encryption.DataEncryptor
 import com.seamlabs.admore.core.network.ApiService
 import com.seamlabs.admore.core.network.NetworkMonitor
@@ -47,7 +46,6 @@ class EventRepositoryImpl @Inject constructor(
         val event = Event(eventName, eventData)
         if (networkMonitor.isNetworkAvailable()) {
             try {
-
                 // Encrypt data before sending
                 val encryptedData = dataEncryptor.encrypt(eventData)
                 

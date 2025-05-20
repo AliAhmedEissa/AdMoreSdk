@@ -17,11 +17,11 @@ interface CollectorFactory {
     fun getBaseCollectors(): List<@JvmSuppressWildcards BaseCollector>
 
     /**
-     * Gets a collector for a specific permission.
-     * @param permission The permission to get a collector for
-     * @return PermissionRequiredCollector for the permission, or null if none exists
+     * Gets collectors that require a specific permission.
+     * @param permission The permission to get collectors for
+     * @return List of PermissionRequiredCollector that require the permission
      */
-    fun getCollectorForPermission(permission: Permission): PermissionRequiredCollector?
+    fun getCollectorsForPermission(permission: Permission): List<PermissionRequiredCollector>
 
     /**
      * Gets all permission-required collectors.
@@ -34,6 +34,4 @@ interface CollectorFactory {
      * @return AdvertisingIdCollector
      */
     fun getAdvertisingIdCollector(): AdvertisingIdCollector
-
-
 }

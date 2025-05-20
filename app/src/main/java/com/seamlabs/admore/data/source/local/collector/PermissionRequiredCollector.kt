@@ -9,16 +9,17 @@ import com.seamlabs.admore.domain.model.Permission
  */
 abstract class PermissionRequiredCollector(
     context: Context,
-    val requiredPermissions: Permission  // Now accepts a set of permissions
+    val requiredPermissions: Set<Permission>  // Now accepts a set of permissions
 ) : BaseCollector(context) {
-//
-//    // Primary permission for backward compatibility and collector factory
-//    val primaryPermission: Permission
-//        get() = requiredPermissions.first()
+
+    // Primary permission for backward compatibility and collector factory
+    val primaryPermission: Permission
+        get() = requiredPermissions.first()
 
     /**
-     * Checks if the required permission is granted.
-     * @return true if granted, false otherwise
+     * Checks if all required permissions are granted.
+     * @return true if all permissions are granted, false otherwise
      */
     abstract fun isPermissionGranted(): Boolean
 }
+

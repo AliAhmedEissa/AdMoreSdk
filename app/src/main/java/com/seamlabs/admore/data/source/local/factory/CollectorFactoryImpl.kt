@@ -19,8 +19,8 @@ class CollectorFactoryImpl @Inject constructor(
         return baseCollectors
     }
 
-    override fun getCollectorForPermission(permission: Permission): PermissionRequiredCollector? {
-        return permissionRequiredCollectors.find { it.requiredPermissions == permission }
+    override fun getCollectorsForPermission(permission: Permission): List<PermissionRequiredCollector> {
+        return permissionRequiredCollectors.filter { it.requiredPermissions.contains(permission) }
     }
 
     override fun getPermissionRequiredCollectors(): List<PermissionRequiredCollector> {

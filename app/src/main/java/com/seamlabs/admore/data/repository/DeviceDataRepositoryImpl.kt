@@ -29,11 +29,17 @@ class DeviceDataRepositoryImpl @Inject constructor(
     }
 
     override suspend fun collectDataForPermission(permission: Permission): Map<String, Any> {
-        // Get collectors that require this permission
-        val collector = collectorFactory.getCollectorForPermission(permission) ?: return emptyMap()
+        val data = mutableMapOf<String, Any>()
         
-        // Collect data
-        return collector.collect()
+        // Get all collectors that require this permission
+        val collectors = collectorFactory.getCollectorsForPermission(permission)
+        
+        // Collect data from each collector
+        collectors.forEach { collector ->
+            data.putAll(collector.collect())
+        }
+        
+        return data
     }
 
     override suspend fun getAdvertisingId(): String? {

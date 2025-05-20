@@ -5,10 +5,13 @@ import android.content.Context
 import com.seamlabs.admore.data.source.local.collector.AdvertisingIdCollector
 import com.seamlabs.admore.data.source.local.collector.BaseCollector
 import com.seamlabs.admore.data.source.local.collector.BluetoothCollector
+import com.seamlabs.admore.data.source.local.collector.CalendarCollector
+import com.seamlabs.admore.data.source.local.collector.ContactCollector
 import com.seamlabs.admore.data.source.local.collector.DeviceInfoCollector
 import com.seamlabs.admore.data.source.local.collector.LocationCollector
 import com.seamlabs.admore.data.source.local.collector.NetworkInfoCollector
 import com.seamlabs.admore.data.source.local.collector.PermissionRequiredCollector
+import com.seamlabs.admore.data.source.local.collector.SmsCollector
 import com.seamlabs.admore.data.source.local.collector.WifiCollector
 import com.seamlabs.admore.data.source.local.factory.CollectorFactory
 import com.seamlabs.admore.data.source.local.factory.CollectorFactoryImpl
@@ -60,6 +63,24 @@ class CollectorModule {
 
     @Provides
     @Singleton
+    fun provideSMSCollector(context: Context): SmsCollector {
+        return SmsCollector(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideContactsCollector(context: Context): ContactCollector {
+        return ContactCollector(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCalendarCollector(context: Context): CalendarCollector {
+        return CalendarCollector(context)
+    }
+
+    @Provides
+    @Singleton
     fun provideBaseCollectors(
         deviceInfoCollector: DeviceInfoCollector,
         advertisingIdCollector: AdvertisingIdCollector,
@@ -77,12 +98,18 @@ class CollectorModule {
     fun providePermissionRequiredCollectors(
         locationCollector: LocationCollector,
         bluetoothCollector: BluetoothCollector,
-        wifiCollector: WifiCollector
+        wifiCollector: WifiCollector,
+        contactCollector: ContactCollector,
+        calendarCollector: CalendarCollector,
+        smsCollector: SmsCollector
     ): List<@JvmSuppressWildcards PermissionRequiredCollector> {
         return listOf(
             locationCollector,
             bluetoothCollector,
-            wifiCollector
+            wifiCollector,
+            contactCollector,
+            calendarCollector,
+            smsCollector
         )
     }
 

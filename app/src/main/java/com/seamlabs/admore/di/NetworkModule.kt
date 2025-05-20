@@ -21,7 +21,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https://api.admore.seamlabs.com/"
+    private const val BASE_URL = "http://209.38.231.139:8080/"
     private const val TIMEOUT = 30L
 
     @Provides
@@ -53,7 +53,7 @@ object NetworkModule {
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
-            .addInterceptor(retryInterceptor)
+           // .addInterceptor(retryInterceptor)
             .certificatePinner(certificatePinner.getPinner())
             .connectTimeout(TIMEOUT, TimeUnit.SECONDS)
             .readTimeout(TIMEOUT, TimeUnit.SECONDS)

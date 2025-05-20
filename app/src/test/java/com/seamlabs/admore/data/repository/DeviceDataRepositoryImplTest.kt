@@ -22,7 +22,8 @@ class DeviceDataRepositoryImplTest {
     private val mockCollectorFactory: CollectorFactory = mock()
     private val mockBaseCollector1: BaseCollector = mock()
     private val mockBaseCollector2: BaseCollector = mock()
-    private val mockLocationCollector: PermissionRequiredCollector = mock()
+    private val mockLocationCollector1: PermissionRequiredCollector = mock()
+    private val mockLocationCollector2: PermissionRequiredCollector = mock()
     private val mockAdvertisingIdCollector: AdvertisingIdCollector = mock()
     
     private lateinit var repository: DeviceDataRepositoryImpl
@@ -37,8 +38,8 @@ class DeviceDataRepositoryImplTest {
                 listOf(mockBaseCollector1, mockBaseCollector2)
             )
             
-            whenever(mockCollectorFactory.getCollectorForPermission(Permission.LOCATION_FINE))
-                .thenReturn(mockLocationCollector)
+            whenever(mockCollectorFactory.getCollectorsForPermission(Permission.LOCATION_FINE))
+                .thenReturn(listOf(mockLocationCollector1, mockLocationCollector2))
             
             whenever(mockCollectorFactory.getAdvertisingIdCollector())
                 .thenReturn(mockAdvertisingIdCollector)
@@ -51,8 +52,12 @@ class DeviceDataRepositoryImplTest {
                 mapOf("key2" to "value2")
             )
             
-            whenever(mockLocationCollector.collect()).thenReturn(
+            whenever(mockLocationCollector1.collect()).thenReturn(
                 mapOf("lat" to 37.4219, "lng" to -122.0841)
+            )
+            
+            whenever(mockLocationCollector2.collect()).thenReturn(
+                mapOf("altitude" to 100.0, "accuracy" to 10.0)
             )
             
             whenever(mockAdvertisingIdCollector.getAdvertisingId()).thenReturn("test-ad-id")
@@ -88,32 +93,37 @@ class DeviceDataRepositoryImplTest {
     }
     
     @Test
-    fun `collectDataForPermission should get data from correct collector`() = testDispatcher.runBlockingTest {
+    fun `collectDataForPermission should get data from all collectors requiring that permission`() = testDispatcher.runBlockingTest {
         // Act
         val result = repository.collectDataForPermission(Permission.LOCATION_FINE)
         
         // Assert
-        verify(mockCollectorFactory).getCollectorForPermission(Permission.LOCATION_FINE)
-        verify(mockLocationCollector).collect()
+        verify(mockCollectorFactory).getCollectorsForPermission(Permission.LOCATION_FINE)
+        verify(mockLocationCollector1).collect()
+        verify(mockLocationCollector2).collect()
         
-        assert(result.size == 2)
+        assert(result.size == 4)
         assert(result.containsKey("lat"))
         assert(result.containsKey("lng"))
+        assert(result.containsKey("altitude"))
+        assert(result.containsKey("accuracy"))
         assert(result["lat"] == 37.4219)
         assert(result["lng"] == -122.0841)
+        assert(result["altitude"] == 100.0)
+        assert(result["accuracy"] == 10.0)
     }
     
     @Test
-    fun `collectDataForPermission should return empty map if no collector found`() = testDispatcher.runBlockingTest {
+    fun `collectDataForPermission should return empty map if no collectors found`() = testDispatcher.runBlockingTest {
         // Arrange
-        whenever(mockCollectorFactory.getCollectorForPermission(Permission.BLUETOOTH))
-            .thenReturn(null)
+        whenever(mockCollectorFactory.getCollectorsForPermission(Permission.BLUETOOTH))
+            .thenReturn(emptyList())
         
         // Act
         val result = repository.collectDataForPermission(Permission.BLUETOOTH)
         
         // Assert
-        verify(mockCollectorFactory).getCollectorForPermission(Permission.BLUETOOTH)
+        verify(mockCollectorFactory).getCollectorsForPermission(Permission.BLUETOOTH)
         assert(result.isEmpty())
     }
     

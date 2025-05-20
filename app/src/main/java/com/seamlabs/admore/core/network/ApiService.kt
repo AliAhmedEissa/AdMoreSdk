@@ -14,6 +14,6 @@ interface ApiService {
      * @param eventRequest The event request
      * @return ApiResponse with success/failure information
      */
-    @POST("events")
+    @POST("api/datalake/records/encrypted")
     suspend fun sendEvent(@Body eventRequest: EventRequest): ApiResponse<Unit>
 }
