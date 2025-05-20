@@ -12,9 +12,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.lifecycleScope
 import com.seamlabs.admore.presentation.callback.EventCallback
 import com.seamlabs.admore.presentation.callback.InitCallback
 import com.seamlabs.admore.ui.theme.AdMoreSDKTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,18 +35,21 @@ class MainActivity : ComponentActivity() {
             // Initialize AdMore SDK with your unique key
             AdMoreSDK.initialize(this, "YOUR_UNIQUE_KEY", callback = object : InitCallback {
                 override fun onSuccess() {
-                    AdMoreSDK.sendEvent(eventName = "event_name",
-                        data = mapOf("key" to "value"),
-                        callback = object : EventCallback {
-                            override fun onSuccess() {
-                                Log.d("myDebugData", "Event sent successfully")
-                            }
+                    lifecycleScope.launch {
+                        delay(10000)
+                        AdMoreSDK.sendEvent(eventName = "event_name",
+                            data = mapOf("key" to "value"),
+                            callback = object : EventCallback {
+                                override fun onSuccess() {
+                                    Log.d("myDebugData", "Event sent successfully")
+                                }
 
-                            override fun onError(error: Throwable) {
-                                Log.e("AdMoreSDK", "Failed to send event", error)
-                            }
-                        })
-                    Log.d("AdMoreSDK", "SDK initialized successfully")
+                                override fun onError(error: Throwable) {
+                                    Log.e("AdMoreSDK", "Failed to send event", error)
+                                }
+                            })
+                    }
+
                 }
 
                 override fun onError(error: Throwable) {

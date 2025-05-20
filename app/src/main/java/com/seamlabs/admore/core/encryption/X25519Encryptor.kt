@@ -1,7 +1,6 @@
 package com.seamlabs.admore.core.encryption
 
 import android.util.Base64
-import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import java.nio.charset.StandardCharsets
@@ -33,8 +32,6 @@ class X25519Encryptor @Inject constructor() : DataEncryptor {
             jsonArray.add(jsonObject)
             val jsonData = gson.toJson(jsonArray)
 
-            Log.d("MyDebugData","X25519Encryptor : encrypt :  " +   jsonData );
-
             // Generate AES key
             val keyGen = KeyGenerator.getInstance("AES")
             keyGen.init(256)
@@ -60,13 +57,10 @@ class X25519Encryptor @Inject constructor() : DataEncryptor {
             val aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
             aesCipher.init(Cipher.ENCRYPT_MODE, SecretKeySpec(aesKeyBytes, "AES"), ivSpec)
             val encryptedData = aesCipher.doFinal(jsonData.toByteArray(StandardCharsets.UTF_8))
-
-            // Output: base64(rsa(aesKey)) || base64(iv) || base64(aes(ciphertext)), separated by ":"
             return Base64.encodeToString(encryptedAesKey, Base64.NO_WRAP) + ":" +
                     Base64.encodeToString(iv, Base64.NO_WRAP) + ":" +
                     Base64.encodeToString(encryptedData, Base64.NO_WRAP)
         } catch (e: Exception) {
-            e.printStackTrace()
             return ""
         }
     }

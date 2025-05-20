@@ -53,7 +53,7 @@ object NetworkModule {
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
-           // .addInterceptor(retryInterceptor)
+            .addInterceptor(retryInterceptor)
             .certificatePinner(certificatePinner.getPinner())
             .connectTimeout(TIMEOUT, TimeUnit.SECONDS)
             .readTimeout(TIMEOUT, TimeUnit.SECONDS)
