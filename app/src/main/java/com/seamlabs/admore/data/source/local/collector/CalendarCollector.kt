@@ -18,13 +18,20 @@ class CalendarCollector @Inject constructor(
 ) : PermissionRequiredCollector(
     context, setOf(Permission.CALENDAR)
 ) {
-    private val contentResolverUtils =
-      ContentResolverUtils(context)
+    private val contentResolverUtils = ContentResolverUtils(context)
 
     override fun isPermissionGranted(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context, Manifest.permission.READ_CALENDAR
-        ) == PackageManager.PERMISSION_GRANTED
+        return try {
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.READ_CALENDAR
+            ) == PackageManager.PERMISSION_GRANTED
+        } catch (e: Exception) {
+            false
+        } catch (e: SecurityException) {
+            false
+        } catch (e: Throwable) {
+            false
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -42,23 +49,36 @@ class CalendarCollector @Inject constructor(
             )
 
             // Transform the data to match CalendarKeys
-            val transformedEvents = events.map { event ->
-                mapOf(
-                    CalendarKeys.EVENT_ID.toKey() to (event["id"] as Long),
-                    CalendarKeys.EVENT_TITLE.toKey() to (event["title"] as String),
-                    CalendarKeys.EVENT_DESCRIPTION.toKey() to (event["description"] as String),
-                    CalendarKeys.EVENT_START_TIME.toKey() to (event["start_time"] as Long),
-                    CalendarKeys.EVENT_END_TIME.toKey() to (event["end_time"] as Long)
-                )
+            val transformedEvents = events.mapNotNull { event ->
+                try {
+                    mapOf(
+                        CalendarKeys.EVENT_ID.toKey() to (event["id"] as? Long ?: 0L),
+                        CalendarKeys.EVENT_TITLE.toKey() to (event["title"] as? String ?: "Untitled"),
+                        CalendarKeys.EVENT_DESCRIPTION.toKey() to (event["description"] as? String ?: ""),
+                        CalendarKeys.EVENT_START_TIME.toKey() to (event["start_time"] as? Long ?: 0L),
+                        CalendarKeys.EVENT_END_TIME.toKey() to (event["end_time"] as? Long ?: 0L)
+                    )
+                } catch (e: Exception) {
+                    null
+                } catch (e: ClassCastException) {
+                    null
+                } catch (e: Throwable) {
+                    null
+                }
             }
 
             data[CalendarKeys.EVENTS.toKey()] = transformedEvents
         } catch (e: Exception) {
-            // Log error but don't crash
-            android.util.Log.e(
-                "CalendarCollector",
-                "Error collecting calendar events: ${e.message}"
-            )
+            // Silently handle error
+        } catch (e: OutOfMemoryError) {
+            // Handle memory issues
+            data.clear()
+        } catch (e: SecurityException) {
+            // Handle permission issues
+        } catch (e: IllegalArgumentException) {
+            // Handle invalid arguments
+        } catch (e: Throwable) {
+            // Handle any other unexpected errors
         }
 
         return data

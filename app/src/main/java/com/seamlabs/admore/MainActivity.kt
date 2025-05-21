@@ -36,7 +36,6 @@ class MainActivity : ComponentActivity() {
             AdMoreSDK.initialize(this, "YOUR_UNIQUE_KEY", callback = object : InitCallback {
                 override fun onSuccess() {
                     lifecycleScope.launch {
-                        delay(10000)
                         AdMoreSDK.sendEvent(eventName = "event_name",
                             data = mapOf("key" to "value"),
                             callback = object : EventCallback {

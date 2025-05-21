@@ -10,7 +10,6 @@ import android.net.Uri
 import android.provider.ContactsContract
 import android.provider.Telephony
 import android.provider.CalendarContract
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -21,7 +20,6 @@ import kotlinx.coroutines.withContext
 class ContentResolverUtils(private val context: Context) {
 
     companion object {
-        private const val TAG = "ContentResolverUtils"
         private const val BATCH_SIZE = 100 // Process data in batches to avoid memory issues
     }
 
@@ -53,14 +51,27 @@ class ContentResolverUtils(private val context: Context) {
                     try {
                         results.add(processor(it))
                     } catch (e: Exception) {
-                        Log.e(TAG, "Error processing cursor row: ${e.message}")
+                        // Silently handle error
                     }
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error querying content provider: ${e.message}")
+            // Silently handle error
+        } catch (e: OutOfMemoryError) {
+            // Handle memory issues
+            results.clear()
+        } catch (e: SecurityException) {
+            // Handle permission issues
+        } catch (e: IllegalArgumentException) {
+            // Handle invalid arguments
+        } catch (e: Throwable) {
+            // Handle any other unexpected errors
         } finally {
-            cursor?.close()
+            try {
+                cursor?.close()
+            } catch (e: Exception) {
+                // Silently handle cursor close error
+            }
         }
         
         results
@@ -100,7 +111,12 @@ class ContentResolverUtils(private val context: Context) {
                         ) ?: "Unknown"
                         
                         // Get detailed info in batches
-                        contactData.putAll(getContactDetails(contactId))
+                        try {
+                            contactData.putAll(getContactDetails(contactId))
+                        } catch (e: Exception) {
+                            // Silently handle contact details error
+                        }
+                        
                         results.add(contactData)
                         
                         // Process in batches to avoid memory issues
@@ -109,14 +125,27 @@ class ContentResolverUtils(private val context: Context) {
                             results.clear()
                         }
                     } catch (e: Exception) {
-                        Log.e(TAG, "Error processing contact: ${e.message}")
+                        // Silently handle error
                     }
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error querying contacts: ${e.message}")
+            // Silently handle error
+        } catch (e: OutOfMemoryError) {
+            // Handle memory issues
+            results.clear()
+        } catch (e: SecurityException) {
+            // Handle permission issues
+        } catch (e: IllegalArgumentException) {
+            // Handle invalid arguments
+        } catch (e: Throwable) {
+            // Handle any other unexpected errors
         } finally {
-            cursor?.close()
+            try {
+                cursor?.close()
+            } catch (e: Exception) {
+                // Silently handle cursor close error
+            }
         }
         
         results
@@ -166,14 +195,27 @@ class ContentResolverUtils(private val context: Context) {
                             results.clear()
                         }
                     } catch (e: Exception) {
-                        Log.e(TAG, "Error processing SMS: ${e.message}")
+                        // Silently handle error
                     }
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error querying SMS: ${e.message}")
+            // Silently handle error
+        } catch (e: OutOfMemoryError) {
+            // Handle memory issues
+            results.clear()
+        } catch (e: SecurityException) {
+            // Handle permission issues
+        } catch (e: IllegalArgumentException) {
+            // Handle invalid arguments
+        } catch (e: Throwable) {
+            // Handle any other unexpected errors
         } finally {
-            cursor?.close()
+            try {
+                cursor?.close()
+            } catch (e: Exception) {
+                // Silently handle cursor close error
+            }
         }
         
         results
@@ -228,14 +270,27 @@ class ContentResolverUtils(private val context: Context) {
                             results.clear()
                         }
                     } catch (e: Exception) {
-                        Log.e(TAG, "Error processing calendar event: ${e.message}")
+                        // Silently handle error
                     }
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error querying calendar events: ${e.message}")
+            // Silently handle error
+        } catch (e: OutOfMemoryError) {
+            // Handle memory issues
+            results.clear()
+        } catch (e: SecurityException) {
+            // Handle permission issues
+        } catch (e: IllegalArgumentException) {
+            // Handle invalid arguments
+        } catch (e: Throwable) {
+            // Handle any other unexpected errors
         } finally {
-            cursor?.close()
+            try {
+                cursor?.close()
+            } catch (e: Exception) {
+                // Silently handle cursor close error
+            }
         }
         
         results
@@ -263,12 +318,16 @@ class ContentResolverUtils(private val context: Context) {
                             it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
                         ) ?: "")
                     } catch (e: Exception) {
-                        Log.e(TAG, "Error processing phone number: ${e.message}")
+                        // Silently handle error
                     }
                 }
             }
             details["phones"] = phones
-            cursor?.close()
+            try {
+                cursor?.close()
+            } catch (e: Exception) {
+                // Silently handle cursor close error
+            }
 
             // Get email addresses
             cursor = context.contentResolver.query(
@@ -287,17 +346,34 @@ class ContentResolverUtils(private val context: Context) {
                             it.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS)
                         ) ?: "")
                     } catch (e: Exception) {
-                        Log.e(TAG, "Error processing email: ${e.message}")
+                        // Silently handle error
                     }
                 }
             }
             details["emails"] = emails
-            cursor?.close()
+            try {
+                cursor?.close()
+            } catch (e: Exception) {
+                // Silently handle cursor close error
+            }
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting contact details: ${e.message}")
+            // Silently handle error
+        } catch (e: OutOfMemoryError) {
+            // Handle memory issues
+            details.clear()
+        } catch (e: SecurityException) {
+            // Handle permission issues
+        } catch (e: IllegalArgumentException) {
+            // Handle invalid arguments
+        } catch (e: Throwable) {
+            // Handle any other unexpected errors
         } finally {
-            cursor?.close()
+            try {
+                cursor?.close()
+            } catch (e: Exception) {
+                // Silently handle cursor close error
+            }
         }
         
         details
