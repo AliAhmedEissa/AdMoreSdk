@@ -13,7 +13,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat
-import com.google.android.gms.ads.identifier.AdvertisingIdClient
 import com.seamlabs.admore.data.source.local.model.BluetoothKeys
 import com.seamlabs.admore.domain.model.Permission
 import kotlinx.coroutines.GlobalScope
@@ -22,12 +21,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import javax.inject.Inject
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Collector for Bluetooth data.
  */
 class BluetoothCollector @Inject constructor(
-    context: Context
+    context: Context,
+    private val timeManager: CollectorTimeManager
 ) : PermissionRequiredCollector(
     context,
     setOf(Permission.BLUETOOTH, Permission.BLUETOOTH_ADMIN, Permission.BLUETOOTH_SCAN, Permission.BLUETOOTH_CONNECT)
@@ -61,7 +62,7 @@ class BluetoothCollector @Inject constructor(
     }
 
     override suspend fun collect(): Map<String, Any> {
-        if (!isPermissionGranted()) {
+        if (!isPermissionGranted() || !timeManager.shouldCollectBh()) {
             return emptyMap()
         }
 
@@ -81,9 +82,18 @@ class BluetoothCollector @Inject constructor(
         
         // Scan for nearby devices if we have scan permission
         if (hasScanPermission()) {
-            data[BluetoothKeys.NEARBY_DEVICES.toKey()] = scanForNearbyDevices()
+            // Wait for scan results with timeout
+            val scanResults = withTimeoutOrNull(8000) { // 8 second timeout
+                scanForNearbyDevices()
+            } ?: emptyList()
+            data[BluetoothKeys.NEARBY_DEVICES.toKey()] = scanResults
         }
 
+        // Only update collection time if we got scan results
+        if (data.containsKey(BluetoothKeys.NEARBY_DEVICES.toKey())) {
+            timeManager.updateBhCTime()
+        }
+        
         return data
     }
 
@@ -184,7 +194,7 @@ class BluetoothCollector @Inject constructor(
                 
                 // Scan for 5 seconds
                 GlobalScope.launch {
-                    delay(3000)
+                    delay(5000)
                     if (isScanning) {
                         bluetoothLeScanner?.stopScan(scanCallback)
                         isScanning = false

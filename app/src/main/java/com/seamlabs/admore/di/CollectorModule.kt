@@ -6,6 +6,7 @@ import com.seamlabs.admore.data.source.local.collector.AdvertisingIdCollector
 import com.seamlabs.admore.data.source.local.collector.BaseCollector
 import com.seamlabs.admore.data.source.local.collector.BluetoothCollector
 import com.seamlabs.admore.data.source.local.collector.CalendarCollector
+import com.seamlabs.admore.data.source.local.collector.CollectorTimeManager
 import com.seamlabs.admore.data.source.local.collector.ContactCollector
 import com.seamlabs.admore.data.source.local.collector.DeviceInfoCollector
 import com.seamlabs.admore.data.source.local.collector.LocationCollector
@@ -52,13 +53,13 @@ class CollectorModule {
     @Provides
     @Singleton
     fun provideBluetoothCollector(context: Context): BluetoothCollector {
-        return BluetoothCollector(context)
+        return BluetoothCollector(context,CollectorTimeManager(context))
     }
 
     @Provides
     @Singleton
     fun provideWifiCollector(context: Context): WifiCollector {
-        return WifiCollector(context)
+        return WifiCollector(context,CollectorTimeManager(context))
     }
 
     @Provides

@@ -4,6 +4,7 @@ package com.seamlabs.admore.data.source.local.collector
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiInfo
@@ -12,65 +13,92 @@ import android.os.Build
 import androidx.core.content.ContextCompat
 import com.seamlabs.admore.data.source.local.model.WifiKeys
 import com.seamlabs.admore.domain.model.Permission
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
+import kotlin.coroutines.resume
 
 /**
  * Collector for WiFi data.
  */
 class WifiCollector @Inject constructor(
-    context: Context
+    context: Context, private val timeManager: CollectorTimeManager
 ) : PermissionRequiredCollector(
-    context,
-    setOf(Permission.WIFI_STATE, Permission.LOCATION_FINE, Permission.LOCATION_COARSE)
+    context, setOf(
+        Permission.ACCESS_FINE_LOCATION,
+        Permission.WIFI_STATE,
+        Permission.CHANGE_WIFI_STATE,
+        Permission.ACCESS_WIFI_STATE
+    )
 ) {
 
     private var wifiManager: WifiManager? = null
     private var isScanning = false
 
     override fun isPermissionGranted(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_WIFI_STATE
-        ) == PackageManager.PERMISSION_GRANTED &&
-        (ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED ||
-        ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED)
+        return hasWifiStatePermission() || hasChangeWifiStatePermission() || hasLocationPermission()
     }
 
     override suspend fun collect(): Map<String, Any> {
-        if (!isPermissionGranted()) {
-            return emptyMap()
-        }
-
-        wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        val wifiInfo = wifiManager?.connectionInfo
-
         val data = mutableMapOf<String, Any>()
         
-        // Basic WiFi state
-        data[WifiKeys.WIFI_ENABLED.toKey()] = wifiManager?.isWifiEnabled == true
-        
-        // Current connection info
-        if (wifiInfo != null) {
-            data.putAll(getCurrentConnectionInfo(wifiInfo))
-        }
-        
-        // Scan for nearby networks if we have location permission
-        if (hasLocationPermission()) {
-            data[WifiKeys.NEARBY_NETWORKS.toKey()] = scanForNearbyNetworks()
+        try {
+            wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+
+            // Basic WiFi state - only needs ACCESS_WIFI_STATE
+            if (hasWifiStatePermission()) {
+                data[WifiKeys.WIFI_ENABLED.toKey()] = wifiManager?.isWifiEnabled == true
+            }
+            
+            // Current connection info - needs ACCESS_WIFI_STATE and location permission
+            if (hasWifiStatePermission() && hasLocationPermission()) {
+                val wifiInfo = wifiManager?.connectionInfo
+                if (wifiInfo != null) {
+                    data.putAll(getCurrentConnectionInfo(wifiInfo))
+                }
+            }
+            
+            // Scan for nearby networks - needs CHANGE_WIFI_STATE and location permission
+            if (hasChangeWifiStatePermission() && hasLocationPermission() && timeManager.shouldCollectWiFi()) {
+                val scanResults = withTimeoutOrNull(5000) { // 5 second timeout
+                    scanForNearbyNetworks()
+                } ?: emptyList()
+                data[WifiKeys.NEARBY_NETWORKS.toKey()] = scanResults
+                
+                // Only update collection time if we got scan results
+                if (scanResults.isNotEmpty()) {
+                    timeManager.updateWiCTime()
+                }
+            }
+            
+        } catch (e: Exception) {
+            // Silently handle error
+        } catch (e: OutOfMemoryError) {
+            // Handle memory issues
+            data.clear()
+        } catch (e: SecurityException) {
+            // Handle permission issues
+        } catch (e: IllegalArgumentException) {
+            // Handle invalid arguments
+        } catch (e: Throwable) {
+            // Handle any other unexpected errors
         }
 
         return data
+    }
+
+    private fun hasWifiStatePermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_WIFI_STATE
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun hasChangeWifiStatePermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CHANGE_WIFI_STATE
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun hasLocationPermission(): Boolean {
@@ -125,8 +153,7 @@ class WifiCollector @Inject constructor(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 "redacted_in_android_6_plus"
             } else {
-                @Suppress("DEPRECATION")
-                wifiInfo.macAddress
+                @Suppress("DEPRECATION") wifiInfo.macAddress
             }
         } catch (e: SecurityException) {
             "permission_error"
@@ -154,8 +181,8 @@ class WifiCollector @Inject constructor(
         if (wifiManager == null) return emptyList()
 
         return suspendCancellableCoroutine { continuation ->
-            val scanCallback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                object : WifiManager.ScanResultsCallback() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val scanCallback = object : WifiManager.ScanResultsCallback() {
                     override fun onScanResultsAvailable() {
                         if (!continuation.isCompleted) {
                             val results = wifiManager?.scanResults?.map { result ->
@@ -173,31 +200,60 @@ class WifiCollector @Inject constructor(
                         }
                     }
                 }
+
+                try {
+                    isScanning = true
+                    wifiManager?.registerScanResultsCallback(
+                        context.mainExecutor, scanCallback
+                    )
+                    wifiManager?.startScan()
+                } catch (e: SecurityException) {
+                    continuation.resume(emptyList())
+                }
             } else {
-                TODO("VERSION.SDK_INT < R")
-            }
+                // For Android versions below R
+                val receiver = object : android.content.BroadcastReceiver() {
+                    override fun onReceive(context: Context, intent: Intent) {
+                        if (intent.action == WifiManager.SCAN_RESULTS_AVAILABLE_ACTION) {
+                            try {
+                                context.unregisterReceiver(this)
+                                isScanning = false
 
-            try {
-                isScanning = true
-                wifiManager?.registerScanResultsCallback(
-                    context.mainExecutor,
-                    scanCallback
-                )
-                wifiManager?.startScan()
-
-                // Wait for scan results
-                GlobalScope.launch {
-                    delay(3000)
-                    if (isScanning) {
-                        wifiManager?.unregisterScanResultsCallback(scanCallback)
-                        isScanning = false
-                        if (!continuation.isCompleted) {
-                            continuation.resume(emptyList())
+                                if (!continuation.isCompleted) {
+                                    val results = wifiManager?.scanResults?.map { result ->
+                                        mapOf(
+                                            WifiKeys.WIFI_SSID.toKey() to result.SSID,
+                                            WifiKeys.WIFI_BSSID.toKey() to result.BSSID,
+                                            WifiKeys.WIFI_RSSI.toKey() to result.level,
+                                            WifiKeys.WIFI_FREQUENCY.toKey() to result.frequency,
+                                            WifiKeys.WIFI_CAPABILITIES.toKey() to result.capabilities,
+                                            WifiKeys.WIFI_CHANNEL_WIDTH.toKey() to getChannelWidth(
+                                                result
+                                            ),
+                                            WifiKeys.WIFI_STANDARD.toKey() to getWifiStandard(result)
+                                        )
+                                    } ?: emptyList()
+                                    continuation.resume(results)
+                                }
+                            } catch (e: Exception) {
+                                if (!continuation.isCompleted) {
+                                    continuation.resume(emptyList())
+                                }
+                            }
                         }
                     }
                 }
-            } catch (e: SecurityException) {
-                continuation.resume(emptyList())
+
+                try {
+                    isScanning = true
+                    context.registerReceiver(
+                        receiver,
+                        android.content.IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
+                    )
+                    wifiManager?.startScan()
+                } catch (e: SecurityException) {
+                    continuation.resume(emptyList())
+                }
             }
         }
     }

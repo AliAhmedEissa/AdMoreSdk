@@ -45,7 +45,7 @@ class ContentResolverUtils(private val context: Context) {
                 selectionArgs,
                 sortOrder
             )
-            
+
             cursor?.let {
                 while (it.moveToNext()) {
                     try {
@@ -68,7 +68,7 @@ class ContentResolverUtils(private val context: Context) {
             // Handle any other unexpected errors
         } finally {
             try {
-                cursor?.close()
+            cursor?.close()
             } catch (e: Exception) {
                 // Silently handle cursor close error
             }
@@ -215,9 +215,9 @@ class ContentResolverUtils(private val context: Context) {
                 cursor?.close()
             } catch (e: Exception) {
                 // Silently handle cursor close error
-            }
         }
-        
+    }
+
         results
     }
 

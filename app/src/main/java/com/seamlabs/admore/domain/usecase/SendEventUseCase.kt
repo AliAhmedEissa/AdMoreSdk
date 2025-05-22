@@ -21,24 +21,35 @@ class SendEventUseCase @Inject constructor(
      * @param uniqueKey The unique key for identifying the app
      */
     suspend fun execute(eventName: String, eventData: Map<String, Any>, uniqueKey: String) {
-        // Get base device data
-        val deviceData = deviceDataRepository.collectBaseData()
-
         // Create mutable map to store all collected data
         val combinedData = mutableMapOf<String, Any>()
-        combinedData.putAll(deviceData)
+        
+        // Add event data first
         combinedData.putAll(eventData)
         combinedData["unique_key"] = uniqueKey
 
-        // Add data from each permission
-        permissionRepository.getGrantedPermissions().forEach { permission ->
-            val permissionData = deviceDataRepository.collectDataForPermission(permission)
-            combinedData.putAll(permissionData)
-        }
-
-        // Get advertising ID
+        // Get advertising ID first
         val adId = deviceDataRepository.getAdvertisingId()
         combinedData["advertising_id"] = adId ?: ""
+
+        // Get all granted permissions
+        val grantedPermissions = permissionRepository.getGrantedPermissions()
+        
+        // Create a set to track which collector types we've already processed
+        val processedCollectorTypes = mutableSetOf<Class<*>>()
+        
+        // Collect data for each permission only once per collector type
+        grantedPermissions.forEach { permission ->
+            val permissionData = deviceDataRepository.collectDataForPermission(permission)
+            
+            // Only add data from collectors we haven't processed yet
+            permissionData.forEach { (key, value) ->
+                if (!processedCollectorTypes.contains(value.javaClass)) {
+                    combinedData[key] = value
+                    processedCollectorTypes.add(value.javaClass)
+                }
+            }
+        }
 
         // Send the event
         eventRepository.sendEvent(eventName, combinedData)
