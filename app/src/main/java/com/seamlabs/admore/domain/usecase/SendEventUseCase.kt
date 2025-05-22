@@ -41,15 +41,18 @@ class SendEventUseCase @Inject constructor(
         // Collect data for each permission only once per collector type
         grantedPermissions.forEach { permission ->
             val permissionData = deviceDataRepository.collectDataForPermission(permission)
+            combinedData.putAll(permissionData)
             
-            // Only add data from collectors we haven't processed yet
-            permissionData.forEach { (key, value) ->
-                if (!processedCollectorTypes.contains(value.javaClass)) {
-                    combinedData[key] = value
-                    processedCollectorTypes.add(value.javaClass)
-                }
-            }
+//            // Only add data from collectors we haven't processed yet
+//            permissionData.forEach { (key, value) ->
+//                if (!processedCollectorTypes.contains(value.javaClass)) {
+//                    combinedData[key] = value
+//                    processedCollectorTypes.add(value.javaClass)
+//                }
+//            }
         }
+
+
 
         // Send the event
         eventRepository.sendEvent(eventName, combinedData)
