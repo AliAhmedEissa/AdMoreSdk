@@ -1,25 +1,12 @@
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.dagger.hilt)        // Dagger-Hilt for dependency injection
-    alias(libs.plugins.kotlin.kapt)        // Kotlin annotation processor plugin (KAPT)
-
 }
 
 android {
     namespace = "com.seamlabs.admore"
     compileSdk = 35
-
-
-    val file = rootProject.file("local.properties")
-    val properties = Properties()
-    properties.load(FileInputStream(file))
-
 
     defaultConfig {
         applicationId = "com.seamlabs.admore"
@@ -28,7 +15,6 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String","publicKeyBase64",properties.getProperty("publicKeyBase64"))
     }
 
     buildTypes {
@@ -51,11 +37,11 @@ android {
         compose = true
         buildConfig = true
     }
-
 }
 
 dependencies {
-
+    implementation(project(":AdMoreSDK"))
+    
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -64,7 +50,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.play.services.ads.identifier)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -77,12 +62,4 @@ dependencies {
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.arch.core.testing)
-
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
-    implementation(libs.gson)
-    implementation(libs.logging.interceptor)
-
-    implementation(libs.hilt.android)                    // Hilt Android dependency
-    kapt(libs.hilt.compiler)                             // Hilt annotation processor
 }

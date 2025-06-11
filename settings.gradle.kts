@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "AdMore SDK"
 include(":app")
- 
+include(":AdMoreSDK")
