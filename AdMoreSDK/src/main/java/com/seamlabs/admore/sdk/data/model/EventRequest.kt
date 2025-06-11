@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/data/model/EventRequest.kt
 package com.seamlabs.admore.sdk.data.model
 
 import com.google.gson.annotations.SerializedName
@@ -8,5 +7,5 @@ import com.google.gson.annotations.SerializedName
  */
 data class EventRequest(
     @SerializedName("encryptedData")
-    val data: String, // Encrypted data
+    val data: String,
 )

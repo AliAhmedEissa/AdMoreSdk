@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/di/NetworkModule.kt
 package com.seamlabs.admore.sdk.di
 
 import android.content.Context

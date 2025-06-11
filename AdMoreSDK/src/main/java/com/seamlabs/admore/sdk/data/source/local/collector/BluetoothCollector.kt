@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/data/source/local/collector/BluetoothCollector.kt
 package com.seamlabs.admore.sdk.data.source.local.collector
 
 import android.Manifest

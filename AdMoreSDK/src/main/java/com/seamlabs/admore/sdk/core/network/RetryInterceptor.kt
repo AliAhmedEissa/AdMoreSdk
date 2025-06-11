@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/core/network/RetryInterceptor.kt
 package com.seamlabs.admore.sdk.core.network
 
 import okhttp3.Interceptor

@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/data/repository/DeviceDataRepositoryImpl.kt
 package com.seamlabs.admore.sdk.data.repository
 
 import com.seamlabs.admore.sdk.data.source.local.factory.CollectorFactory

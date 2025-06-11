@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/di/EncryptionModule.kt
 package com.seamlabs.admore.sdk.di
 
 import com.seamlabs.admore.sdk.core.encryption.DataEncryptor

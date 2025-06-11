@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/presentation/callback/EventCallback.kt
 package com.seamlabs.admore.sdk.presentation.callback
 
 /**

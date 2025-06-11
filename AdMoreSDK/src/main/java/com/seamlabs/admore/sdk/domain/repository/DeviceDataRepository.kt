@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/domain/repository/DeviceDataRepository.kt
 package com.seamlabs.admore.sdk.domain.repository
 
 import com.seamlabs.admore.sdk.domain.model.Permission

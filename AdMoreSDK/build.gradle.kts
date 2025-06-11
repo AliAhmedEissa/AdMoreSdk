@@ -6,23 +6,26 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.dagger.hilt)        // Dagger-Hilt for dependency injection
     alias(libs.plugins.kotlin.kapt)        // Kotlin annotation processor plugin (KAPT)
+    `maven-publish`                        // Add Maven Publish plugin
+}
 
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
 }
 
 android {
     namespace = "com.seamlabs.admore.sdk"
     compileSdk = 34
 
-    val file = rootProject.file("local.properties")
-    val properties = Properties()
-    properties.load(FileInputStream(file))
-
-
     defaultConfig {
         minSdk = 26
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
-        buildConfigField("String","publicKeyBase64",properties.getProperty("publicKeyBase64"))
+        buildConfigField("String","publicKeyBase64",localProperties.getProperty("publicKeyBase64"))
+        buildConfigField("String","certificatePin",localProperties.getProperty("certificatePin"))
+        buildConfigField("String","host",localProperties.getProperty("host"))
 
     }
 
@@ -66,4 +69,46 @@ dependencies {
     kapt(libs.hilt.compiler)                             // Hilt annotation processor
 
     implementation(libs.play.services.ads.identifier)
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+                
+                groupId = "com.seamlabs"
+                artifactId = "admore-sdk"
+                version = "1.0.0"  // You can change this version as needed
+                
+                pom {
+                    name.set("AdMore SDK")
+                    description.set("AdMore SDK for Android")
+                    url.set("https://github.com/AliAhmedEissa/AdMoreSdk")
+                    
+                    licenses {
+                        license {
+                            name.set("The Apache License, Version 2.0")
+                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
+                    }
+                    
+                    developers {
+                        developer {
+                            id.set("seamlabs")
+                            name.set("Seam Labs")
+                            email.set("a.eissa@blueride.co")
+                        }
+                    }
+                }
+            }
+        }
+        
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/AliAhmedEissa/AdMoreSdk")
+            }
+        }
+    }
 }

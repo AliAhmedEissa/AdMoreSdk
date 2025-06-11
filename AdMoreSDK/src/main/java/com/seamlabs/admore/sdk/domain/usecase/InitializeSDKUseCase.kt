@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/domain/usecase/InitializeSDKUseCase.kt
 package com.seamlabs.admore.sdk.domain.usecase
 
 import com.seamlabs.admore.sdk.domain.repository.DeviceDataRepository

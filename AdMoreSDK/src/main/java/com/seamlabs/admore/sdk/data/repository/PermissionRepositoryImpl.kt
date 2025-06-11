@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/data/repository/PermissionRepositoryImpl.kt
 package com.seamlabs.admore.sdk.data.repository
 
 import android.content.Context

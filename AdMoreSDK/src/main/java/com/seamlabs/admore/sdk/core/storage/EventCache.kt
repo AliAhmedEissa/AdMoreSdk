@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/core/storage/EventCache.kt
 package com.seamlabs.admore.sdk.core.storage
 
 import com.seamlabs.admore.sdk.domain.model.Event

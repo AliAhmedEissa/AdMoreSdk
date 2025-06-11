@@ -3,7 +3,6 @@
  */
 package com.seamlabs.admore.sdk.core.storage
 
-import android.content.ContentResolver
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri

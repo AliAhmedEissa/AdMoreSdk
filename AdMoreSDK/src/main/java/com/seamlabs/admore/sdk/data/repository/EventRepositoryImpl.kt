@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/data/repository/EventRepositoryImpl.kt
 package com.seamlabs.admore.sdk.data.repository
 
 import com.seamlabs.admore.sdk.core.encryption.DataEncryptor

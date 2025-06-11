@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/data/source/local/PermissionChecker.kt
 package com.seamlabs.admore.sdk.data.source.local
 
 import android.content.Context

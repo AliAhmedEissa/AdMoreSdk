@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/core/network/NetworkMonitor.kt
 package com.seamlabs.admore.sdk.core.network
 
 import android.content.Context

@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/domain/model/Event.kt
 package com.seamlabs.admore.sdk.domain.model
 
 /**

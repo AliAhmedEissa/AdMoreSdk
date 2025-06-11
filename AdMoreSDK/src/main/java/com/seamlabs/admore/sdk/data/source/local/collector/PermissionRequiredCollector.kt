@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/data/source/local/collector/PermissionRequiredCollector.kt
 package com.seamlabs.admore.sdk.data.source.local.collector
 
 import android.content.Context

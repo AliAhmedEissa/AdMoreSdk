@@ -1,6 +1,6 @@
-// File: com.seamlabs.admore/core/network/CertificatePinner.kt
 package com.seamlabs.admore.sdk.core.network
 
+import com.seamlabs.admore.sdk.BuildConfig
 import okhttp3.CertificatePinner
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -11,8 +11,8 @@ import javax.inject.Singleton
 @Singleton
 class CertificatePinner @Inject constructor() {
     
-    private val HOST = "api.admore.seamlabs.com"
-    private val PIN = "sha256/MCowBQYDK2VuAyEAq9m6BNi+QtbXyIm/SYmZmJqof1d6xdcv/+obsEHcqSI=" // This should be the actual hash in production
+    private val HOST = BuildConfig.host
+    private val PIN =BuildConfig.certificatePin
     
     /**
      * Gets the OkHttp CertificatePinner.

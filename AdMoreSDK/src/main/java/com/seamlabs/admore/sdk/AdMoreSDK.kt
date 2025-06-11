@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/AdMoreSDK.kt
 package com.seamlabs.admore.sdk
 
 import android.content.Context

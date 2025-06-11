@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/domain/repository/PermissionRepository.kt
 package com.seamlabs.admore.sdk.domain.repository
 
 import com.seamlabs.admore.sdk.domain.model.Permission

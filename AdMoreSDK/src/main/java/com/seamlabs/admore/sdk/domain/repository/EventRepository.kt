@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/domain/repository/EventRepository.kt
 package com.seamlabs.admore.sdk.domain.repository
 
 /**

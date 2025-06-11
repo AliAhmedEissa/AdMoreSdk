@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/di/RepositoryModule.kt
 package com.seamlabs.admore.sdk.di
 
 import com.seamlabs.admore.sdk.data.repository.DeviceDataRepositoryImpl

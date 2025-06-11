@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/data/source/local/factory/CollectorFactoryImpl.kt
 package com.seamlabs.admore.sdk.data.source.local.factory
 
 import com.seamlabs.admore.sdk.data.source.local.collector.AdvertisingIdCollector

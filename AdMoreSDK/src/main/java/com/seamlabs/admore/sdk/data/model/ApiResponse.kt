@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/data/model/ApiResponse.kt
 package com.seamlabs.admore.sdk.data.model
 
 import com.google.gson.annotations.SerializedName

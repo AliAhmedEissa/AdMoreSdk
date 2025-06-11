@@ -1,4 +1,3 @@
-// File: com.seamlabs.admore/core/encryption/DataEncryptor.kt
 package com.seamlabs.admore.sdk.core.encryption
 
 /**
