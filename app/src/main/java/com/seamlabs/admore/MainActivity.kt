@@ -13,10 +13,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
-import com.seamlabs.admore.presentation.callback.EventCallback
-import com.seamlabs.admore.presentation.callback.InitCallback
+import com.seamlabs.admore.sdk.AdMoreSDK
+import com.seamlabs.admore.sdk.presentation.callback.EventCallback
+import com.seamlabs.admore.sdk.presentation.callback.InitCallback
+
 import com.seamlabs.admore.ui.theme.AdMoreSDKTheme
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
