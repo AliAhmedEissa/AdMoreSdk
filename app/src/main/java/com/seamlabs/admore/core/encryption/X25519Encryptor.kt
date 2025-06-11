@@ -13,6 +13,7 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.seamlabs.admore.BuildConfig
 
 /**
  * Implementation of DataEncryptor using hybrid RSA/AES encryption.
@@ -21,8 +22,7 @@ import javax.inject.Singleton
 class X25519Encryptor @Inject constructor() : DataEncryptor {
 
     private val gson = Gson()
-    private val publicKeyBase64 =
-        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhylwhwTzPfMgHwNsnzbK/brtQ5sow8rSrYvCDdMUTcyz/6yEE/LTJUVM2BVRcoeg+YgZgW4ZkcpPLyccF4O9oieTcrJNLc/adArQr9fcUxpJ2pKCebpaRWOJRcxqXx4tNC3LcpgbmJE7Reu6Phc0WWDFDhXQKuQIvzdApQpU4norHBJaG4exi2BCnafqn8ncBrPX8IfgvdEThbtXl8brK9A/UAxlNcqB+ffBiApl9agjDkgOzaV+DCQJ0ZUIZ/HEpz4abZPX0wWOCFh4fCGy6DLcAxx0SwU5jCnRfKYGNog2VkcR/iXoJ2Ax5IfjX5OnTFkBSGoRLWXxxNJqpvw9CwIDAQAB"
+    private val publicKeyBase64 = BuildConfig.publicKeyBase64
 
     override fun encrypt(data: Map<String, Any>): String {
         try {

@@ -1,3 +1,7 @@
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -11,14 +15,20 @@ android {
     namespace = "com.seamlabs.admore"
     compileSdk = 35
 
+
+    val file = rootProject.file("local.properties")
+    val properties = Properties()
+    properties.load(FileInputStream(file))
+
+
     defaultConfig {
         applicationId = "com.seamlabs.admore"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String","publicKeyBase64",properties.getProperty("publicKeyBase64"))
     }
 
     buildTypes {
@@ -39,6 +49,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
 }
