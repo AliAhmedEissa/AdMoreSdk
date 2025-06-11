@@ -110,7 +110,7 @@ afterEvaluate {
                 url = uri("https://maven.pkg.github.com/AliAhmedEissa/AdMoreSdk")
                 credentials {
                     username = "AliAhmedEissa"
-                    password = "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"
+                    password = System.getProperty("GITHUB_TOKEN")
                 }
             }
         }
