@@ -23,9 +23,9 @@ android {
         minSdk = 26
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
-        buildConfigField("String","publicKeyBase64","MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhylwhwTzPfMgHwNsnzbK/brtQ5sow8rSrYvCDdMUTcyz/6yEE/LTJUVM2BVRcoeg+YgZgW4ZkcpPLyccF4O9oieTcrJNLc/adArQr9fcUxpJ2pKCebpaRWOJRcxqXx4tNC3LcpgbmJE7Reu6Phc0WWDFDhXQKuQIvzdApQpU4norHBJaG4exi2BCnafqn8ncBrPX8IfgvdEThbtXl8brK9A/UAxlNcqB+ffBiApl9agjDkgOzaV+DCQJ0ZUIZ/HEpz4abZPX0wWOCFh4fCGy6DLcAxx0SwU5jCnRfKYGNog2VkcR/iXoJ2Ax5IfjX5OnTFkBSGoRLWXxxNJqpvw9CwIDAQAB")
-        buildConfigField("String","certificatePin","sha256/MCowBQYDK2VuAyEAq9m6BNi+QtbXyIm/SYmZmJqof1d6xdcv/+obsEHcqSI=")
-        buildConfigField("String","host","api.admore.seamlabs.com")
+        buildConfigField("String","publicKeyBase64","\"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhylwhwTzPfMgHwNsnzbK/brtQ5sow8rSrYvCDdMUTcyz/6yEE/LTJUVM2BVRcoeg+YgZgW4ZkcpPLyccF4O9oieTcrJNLc/adArQr9fcUxpJ2pKCebpaRWOJRcxqXx4tNC3LcpgbmJE7Reu6Phc0WWDFDhXQKuQIvzdApQpU4norHBJaG4exi2BCnafqn8ncBrPX8IfgvdEThbtXl8brK9A/UAxlNcqB+ffBiApl9agjDkgOzaV+DCQJ0ZUIZ/HEpz4abZPX0wWOCFh4fCGy6DLcAxx0SwU5jCnRfKYGNog2VkcR/iXoJ2Ax5IfjX5OnTFkBSGoRLWXxxNJqpvw9CwIDAQAB\"")
+        buildConfigField("String","certificatePin","\"sha256/MCowBQYDK2VuAyEAq9m6BNi+QtbXyIm/SYmZmJqof1d6xdcv/+obsEHcqSI=\"")
+        buildConfigField("String","host","\"api.admore.seamlabs.com\"")
 
     }
 
@@ -79,7 +79,7 @@ afterEvaluate {
                 
                 groupId = "com.seamlabs"
                 artifactId = "admore-sdk"
-                version = "1.0.3"  // You can change this version as needed
+                version = "1.0"  // You can change this version as needed
                 
                 pom {
                     name.set("AdMore SDK")
