@@ -79,7 +79,7 @@ afterEvaluate {
                 
                 groupId = "com.seamlabs"
                 artifactId = "admore-sdk"
-                version = "1.0.3"  // You can change this version as needed
+                version = "1.0.4"  // You can change this version as needed
                 
                 pom {
                     name.set("AdMore SDK")
