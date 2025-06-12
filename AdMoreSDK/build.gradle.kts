@@ -17,7 +17,7 @@ if (localPropertiesFile.exists()) {
 
 android {
     namespace = "com.seamlabs.admore.sdk"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 26
@@ -92,7 +92,7 @@ afterEvaluate {
 
                 groupId = "com.seamlabs"
                 artifactId = "admore-sdk"
-                version = "1.0.6"
+                version = "1.0.7"
 
                 pom {
                     name.set("AdMore SDK")
