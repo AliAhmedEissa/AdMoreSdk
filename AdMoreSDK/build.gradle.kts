@@ -76,42 +76,9 @@ afterEvaluate {
         publications {
             create<MavenPublication>("release") {
                 from(components["release"])
-                
                 groupId = "com.seamlabs"
                 artifactId = "admore-sdk"
                 version = "1.0.2"  // You can change this version as needed
-                
-                pom {
-                    name.set("AdMore SDK")
-                    description.set("AdMore SDK for Android")
-                    url.set("https://github.com/AliAhmedEissa/AdMoreSdk")
-                    
-                    licenses {
-                        license {
-                            name.set("The Apache License, Version 2.0")
-                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                        }
-                    }
-                    
-                    developers {
-                        developer {
-                            id.set("seamlabs")
-                            name.set("Seam Labs")
-                            email.set("a.eissa@blueride.co")
-                        }
-                    }
-                }
-            }
-        }
-
-        repositories {
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/AliAhmedEissa/AdMoreSdk")
-                credentials {
-                    username = "AliAhmedEissa"
-                    password = localProperties.getProperty("GITHUB_TOKEN")
-                }
             }
         }
     }
