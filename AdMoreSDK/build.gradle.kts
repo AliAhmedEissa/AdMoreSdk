@@ -79,7 +79,7 @@ afterEvaluate {
                 
                 groupId = "com.seamlabs"
                 artifactId = "admore-sdk"
-                version = "1.0.2"  // You can change this version as needed
+                version = "1.0.3"  // You can change this version as needed
                 
                 pom {
                     name.set("AdMore SDK")
@@ -104,15 +104,5 @@ afterEvaluate {
             }
         }
 
-        repositories {
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/AliAhmedEissa/AdMoreSdk")
-                credentials {
-                    username = "AliAhmedEissa"
-                    password = localProperties.getProperty("GITHUB_TOKEN")
-                }
-            }
-        }
     }
 }
