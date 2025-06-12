@@ -1,21 +1,60 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.kts.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# AdMore SDK ProGuard Rules
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep SDK entry points
+-keep public class com.seamlabs.admore.AdMoreSDK { *; }
+-keep public class com.seamlabs.admore.presentation.callback.** { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep Dagger components and modules
+-keep class com.seamlabs.admore.di.** { *; }
+-keepclassmembers,allowobfuscation class * {
+    @javax.inject.* *;
+    @dagger.* *;
+    <init>();
+}
+-keep class dagger.* { *; }
+-keep class javax.inject.* { *; }
+-keep class * extends dagger.internal.Factory
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep models
+-keep class com.seamlabs.admore.domain.model.** { *; }
+-keep class com.seamlabs.admore.data.model.** { *; }
+
+# Keep Kotlin coroutines
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+-keepclassmembernames class kotlinx.** {
+    volatile <fields>;
+}
+
+# Retrofit and OkHttp rules
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-dontwarn javax.annotation.**
+-dontwarn retrofit2.**
+-keep class retrofit2.** { *; }
+-keepattributes Signature
+-keepattributes Exceptions
+-keepclasseswithmembers class * {
+    @retrofit2.http.* <methods>;
+}
+
+# Gson rules
+-keep class com.google.gson.** { *; }
+-keepattributes *Annotation*
+-keepattributes EnclosingMethod
+-keep class * implements com.google.gson.TypeAdapterFactory
+-keep class * implements com.google.gson.JsonSerializer
+-keep class * implements com.google.gson.JsonDeserializer
+-keepclassmembers enum * { *; }
+
+# Android X
+-dontwarn androidx.**
+-keep class androidx.** { *; }
+
+# AdMore SDK specific
+-keepclassmembers class com.seamlabs.admore.data.source.local.collector.** { *; }
+-keepclassmembers enum com.seamlabs.admore.** { *; }
+
+# Keep annotation attributes used for DI
+-keepattributes RuntimeVisibleAnnotations
+-keepattributes AnnotationDefault
