@@ -20,13 +20,12 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import java.util.UUID
-import javax.inject.Inject
 
 /**
  * Collector for basic device information.
  * Collects all available data that doesn't require runtime permissions.
  */
-class DeviceInfoCollector @Inject constructor(
+class DeviceInfoCollector(
     context: Context
 ) : BaseCollector(context) {
 
@@ -127,8 +126,7 @@ class DeviceInfoCollector @Inject constructor(
 
     private fun getBatteryInfo(): Map<String, Any> {
         val batteryIntent = context.registerReceiver(
-            null,
-            IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+            null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         )
 
         val level = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
@@ -136,8 +134,8 @@ class DeviceInfoCollector @Inject constructor(
         val percentage = if (level != -1 && scale != -1) (level * 100 / scale.toFloat()) else -1f
 
         val status = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
-        val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
-                status == BatteryManager.BATTERY_STATUS_FULL
+        val isCharging =
+            status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
 
         val chargePlug = batteryIntent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) ?: -1
         val usbCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_USB
@@ -152,7 +150,10 @@ class DeviceInfoCollector @Inject constructor(
             DeviceInfoKeys.BATTERY_HEALTH.toKey() to getBatteryHealthString(
                 batteryIntent?.getIntExtra(BatteryManager.EXTRA_HEALTH, -1) ?: -1
             ),
-            DeviceInfoKeys.BATTERY_TEMPERATURE.toKey() to (batteryIntent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1) ?: -1) / 10f
+            DeviceInfoKeys.BATTERY_TEMPERATURE.toKey() to (batteryIntent?.getIntExtra(
+                BatteryManager.EXTRA_TEMPERATURE,
+                -1
+            ) ?: -1) / 10f
         )
     }
 
@@ -163,13 +164,12 @@ class DeviceInfoCollector @Inject constructor(
             DeviceInfoKeys.APP_VERSION_CODE.toKey() to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 packageInfo.longVersionCode
             } else {
-                @Suppress("DEPRECATION")
-                packageInfo.versionCode.toLong()
+                @Suppress("DEPRECATION") packageInfo.versionCode.toLong()
             },
             DeviceInfoKeys.APP_FIRST_INSTALL_TIME.toKey() to packageInfo.firstInstallTime,
             DeviceInfoKeys.APP_LAST_UPDATE_TIME.toKey() to packageInfo.lastUpdateTime,
             DeviceInfoKeys.APP_TARGET_SDK.toKey() to context.applicationInfo.targetSdkVersion
-        ) as Map<String, Any>
+        )
     }
 
     private fun getTimeInfo(): Map<String, Any> {
@@ -233,7 +233,8 @@ class DeviceInfoCollector @Inject constructor(
     }
 
     private fun getDeviceUniqueId(): String {
-        val androidId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+        val androidId =
+            Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
 
         return if (androidId != null && androidId != "9774d56d682e549c" && androidId.length > 8) {
             androidId
@@ -306,18 +307,14 @@ class DeviceInfoCollector @Inject constructor(
     }
 
     private fun isEmulator(): Boolean {
-        return (Build.FINGERPRINT.startsWith("generic")
-                || Build.FINGERPRINT.startsWith("unknown")
-                || Build.MODEL.contains("google_sdk")
-                || Build.MODEL.contains("Emulator")
-                || Build.MODEL.contains("Android SDK built for x86")
-                || Build.MANUFACTURER.contains("Genymotion")
-                || (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic"))
-                || "google_sdk" == Build.PRODUCT
-                || Build.PRODUCT.contains("sdk")
-                || Build.PRODUCT.contains("emulator")
-                || Build.PRODUCT.contains("simulator")
-                || Build.HARDWARE.contains("goldfish")
-                || Build.HARDWARE.contains("ranchu"))
+        return (Build.FINGERPRINT.startsWith("generic") || Build.FINGERPRINT.startsWith("unknown") || Build.MODEL.contains(
+            "google_sdk"
+        ) || Build.MODEL.contains("Emulator") || Build.MODEL.contains("Android SDK built for x86") || Build.MANUFACTURER.contains(
+            "Genymotion"
+        ) || (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic")) || "google_sdk" == Build.PRODUCT || Build.PRODUCT.contains(
+            "sdk"
+        ) || Build.PRODUCT.contains("emulator") || Build.PRODUCT.contains("simulator") || Build.HARDWARE.contains(
+            "goldfish"
+        ) || Build.HARDWARE.contains("ranchu"))
     }
 }

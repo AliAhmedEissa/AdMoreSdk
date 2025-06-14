@@ -2,12 +2,11 @@ package com.seamlabs.admore.sdk.domain.usecase
 
 import com.seamlabs.admore.sdk.domain.repository.DeviceDataRepository
 import com.seamlabs.admore.sdk.domain.repository.PermissionRepository
-import javax.inject.Inject
 
 /**
  * Use case for collecting all available device data.
  */
-class CollectDeviceDataUseCase @Inject constructor(
+class CollectDeviceDataUseCase(
     private val deviceDataRepository: DeviceDataRepository,
     private val permissionRepository: PermissionRepository
 ) {

@@ -6,25 +6,20 @@ import com.seamlabs.admore.sdk.data.repository.PermissionRepositoryImpl
 import com.seamlabs.admore.sdk.domain.repository.DeviceDataRepository
 import com.seamlabs.admore.sdk.domain.repository.EventRepository
 import com.seamlabs.admore.sdk.domain.repository.PermissionRepository
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
+import org.koin.android.ext.koin.androidContext
+import org.koin.dsl.module
 
-@Module
-@InstallIn(SingletonComponent::class)
-abstract class RepositoryModule {
+val repositoryModule = module {
 
-    @Binds
-    @Singleton
-    abstract fun bindDeviceDataRepository(impl: DeviceDataRepositoryImpl): DeviceDataRepository
+    single<DeviceDataRepository> {
+        DeviceDataRepositoryImpl(get())
+    }
 
-    @Binds
-    @Singleton
-    abstract fun bindEventRepository(impl: EventRepositoryImpl): EventRepository
+    single<EventRepository> {
+        EventRepositoryImpl(get(), get(), get(), get())
+    }
 
-    @Binds
-    @Singleton
-    abstract fun bindPermissionRepository(impl: PermissionRepositoryImpl): PermissionRepository
+    single<PermissionRepository> {
+        PermissionRepositoryImpl(androidContext(), get())
+    }
 }

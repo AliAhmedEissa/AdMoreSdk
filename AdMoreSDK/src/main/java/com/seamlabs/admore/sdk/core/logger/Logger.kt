@@ -1,14 +1,11 @@
 package com.seamlabs.admore.sdk.core.logger
 
 import android.util.Log
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * Utility class for logging.
  */
-@Singleton
-class Logger @Inject constructor() {
+class Logger {
     private val TAG = "AdMoreSDK"
 
     /**

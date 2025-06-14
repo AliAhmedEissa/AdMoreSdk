@@ -1,124 +1,49 @@
 package com.seamlabs.admore.sdk.di
 
-import android.content.Context
-import com.seamlabs.admore.sdk.data.source.local.collector.AdvertisingIdCollector
-import com.seamlabs.admore.sdk.data.source.local.collector.BaseCollector
-import com.seamlabs.admore.sdk.data.source.local.collector.BluetoothCollector
-import com.seamlabs.admore.sdk.data.source.local.collector.CalendarCollector
-import com.seamlabs.admore.sdk.data.source.local.collector.CollectorTimeManager
-import com.seamlabs.admore.sdk.data.source.local.collector.ContactCollector
-import com.seamlabs.admore.sdk.data.source.local.collector.DeviceInfoCollector
-import com.seamlabs.admore.sdk.data.source.local.collector.LocationCollector
-import com.seamlabs.admore.sdk.data.source.local.collector.NetworkInfoCollector
-import com.seamlabs.admore.sdk.data.source.local.collector.PermissionRequiredCollector
-import com.seamlabs.admore.sdk.data.source.local.collector.SmsCollector
-import com.seamlabs.admore.sdk.data.source.local.collector.WifiCollector
+import com.seamlabs.admore.sdk.core.storage.EventCache
+import com.seamlabs.admore.sdk.data.source.local.PermissionChecker
+import com.seamlabs.admore.sdk.data.source.local.collector.*
 import com.seamlabs.admore.sdk.data.source.local.factory.CollectorFactory
 import com.seamlabs.admore.sdk.data.source.local.factory.CollectorFactoryImpl
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
+import org.koin.android.ext.koin.androidContext
+import org.koin.dsl.module
 
-@Module
-@InstallIn(SingletonComponent::class)
-class CollectorModule {
+val collectorModule = module {
 
-    @Provides
-    @Singleton
-    fun provideDeviceInfoCollector(context: Context): DeviceInfoCollector {
-        return DeviceInfoCollector(context)
-    }
+    // Core dependencies
+    single { CollectorTimeManager(androidContext()) }
+    single { PermissionChecker(androidContext()) }
+    single { EventCache() }
 
-    @Provides
-    @Singleton
-    fun provideAdvertisingIdCollector(context: Context): AdvertisingIdCollector {
-        return AdvertisingIdCollector(context)
-    }
+    // Base Collectors (individual instances)
+    single<DeviceInfoCollector> { DeviceInfoCollector(androidContext()) }
+    single<AdvertisingIdCollector> { AdvertisingIdCollector(androidContext()) }
+    single<NetworkInfoCollector> { NetworkInfoCollector(androidContext()) }
 
-    @Provides
-    @Singleton
-    fun provideNetworkInfoCollector(context: Context): NetworkInfoCollector {
-        return NetworkInfoCollector(context)
-    }
+    // Permission Required Collectors (individual instances)
+    single<LocationCollector> { LocationCollector(androidContext()) }
+    single<BluetoothCollector> { BluetoothCollector(androidContext(), get()) }
+    single<WifiCollector> { WifiCollector(androidContext(), get()) }
+    single<ContactCollector> { ContactCollector(androidContext()) }
+    single<CalendarCollector> { CalendarCollector(androidContext()) }
+    single<SmsCollector> { SmsCollector(androidContext()) }
 
-    @Provides
-    @Singleton
-    fun provideLocationCollector(context: Context): LocationCollector {
-        return LocationCollector(context)
-    }
-
-    @Provides
-    @Singleton
-    fun provideBluetoothCollector(context: Context): BluetoothCollector {
-        return BluetoothCollector(context,CollectorTimeManager(context))
-    }
-
-    @Provides
-    @Singleton
-    fun provideWifiCollector(context: Context): WifiCollector {
-        return WifiCollector(context,CollectorTimeManager(context))
-    }
-
-    @Provides
-    @Singleton
-    fun provideSMSCollector(context: Context): SmsCollector {
-        return SmsCollector(context)
-    }
-
-    @Provides
-    @Singleton
-    fun provideContactsCollector(context: Context): ContactCollector {
-        return ContactCollector(context)
-    }
-
-    @Provides
-    @Singleton
-    fun provideCalendarCollector(context: Context): CalendarCollector {
-        return CalendarCollector(context)
-    }
-
-    @Provides
-    @Singleton
-    fun provideBaseCollectors(
-        deviceInfoCollector: DeviceInfoCollector,
-        advertisingIdCollector: AdvertisingIdCollector,
-        networkInfoCollector: NetworkInfoCollector
-    ): List<@JvmSuppressWildcards BaseCollector> {
-        return listOf(
-            deviceInfoCollector,
-            advertisingIdCollector,
-            networkInfoCollector
+    // Direct CollectorFactory with explicit dependencies
+    single<CollectorFactory> {
+        CollectorFactoryImpl(
+            baseCollectors = listOf(
+                get<DeviceInfoCollector>(),
+                get<AdvertisingIdCollector>(),
+                get<NetworkInfoCollector>()
+            ),
+            permissionRequiredCollectors = listOf(
+                get<LocationCollector>(),
+                get<BluetoothCollector>(),
+                get<WifiCollector>(),
+                get<ContactCollector>(),
+                get<CalendarCollector>(),
+                get<SmsCollector>()
+            )
         )
-    }
-
-    @Provides
-    @Singleton
-    fun providePermissionRequiredCollectors(
-        locationCollector: LocationCollector,
-        bluetoothCollector: BluetoothCollector,
-        wifiCollector: WifiCollector,
-        contactCollector: ContactCollector,
-        calendarCollector: CalendarCollector,
-        smsCollector: SmsCollector
-    ): List<@JvmSuppressWildcards PermissionRequiredCollector> {
-        return listOf(
-            locationCollector,
-            bluetoothCollector,
-            wifiCollector,
-            contactCollector,
-            calendarCollector,
-            smsCollector
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun provideCollectorFactory(
-        baseCollectors: List<@JvmSuppressWildcards BaseCollector>,
-        permissionRequiredCollectors: List<@JvmSuppressWildcards PermissionRequiredCollector>
-    ): CollectorFactory {
-        return CollectorFactoryImpl(baseCollectors, permissionRequiredCollectors)
     }
 }

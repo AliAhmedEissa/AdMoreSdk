@@ -8,12 +8,11 @@ import androidx.core.content.ContextCompat
 import com.seamlabs.admore.sdk.core.storage.ContentResolverUtils
 import com.seamlabs.admore.sdk.data.source.local.model.CalendarKeys
 import com.seamlabs.admore.sdk.domain.model.Permission
-import javax.inject.Inject
 
 /**
  * Collector for calendar data.
  */
-class CalendarCollector @Inject constructor(
+class CalendarCollector(
     context: Context
 ) : PermissionRequiredCollector(
     context, setOf(Permission.CALENDAR)
@@ -53,9 +52,12 @@ class CalendarCollector @Inject constructor(
                 try {
                     mapOf(
                         CalendarKeys.EVENT_ID.toKey() to (event["id"] as? Long ?: 0L),
-                        CalendarKeys.EVENT_TITLE.toKey() to (event["title"] as? String ?: "Untitled"),
-                        CalendarKeys.EVENT_DESCRIPTION.toKey() to (event["description"] as? String ?: ""),
-                        CalendarKeys.EVENT_START_TIME.toKey() to (event["start_time"] as? Long ?: 0L),
+                        CalendarKeys.EVENT_TITLE.toKey() to (event["title"] as? String
+                            ?: "Untitled"),
+                        CalendarKeys.EVENT_DESCRIPTION.toKey() to (event["description"] as? String
+                            ?: ""),
+                        CalendarKeys.EVENT_START_TIME.toKey() to (event["start_time"] as? Long
+                            ?: 0L),
                         CalendarKeys.EVENT_END_TIME.toKey() to (event["end_time"] as? Long ?: 0L)
                     )
                 } catch (e: Exception) {

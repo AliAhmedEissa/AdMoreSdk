@@ -14,13 +14,12 @@ import com.seamlabs.admore.sdk.data.source.local.model.WifiKeys
 import com.seamlabs.admore.sdk.domain.model.Permission
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
-import javax.inject.Inject
 import kotlin.coroutines.resume
 
 /**
  * Collector for WiFi data.
  */
-class WifiCollector @Inject constructor(
+class WifiCollector(
     context: Context, private val timeManager: CollectorTimeManager
 ) : PermissionRequiredCollector(
     context, setOf(
@@ -40,15 +39,16 @@ class WifiCollector @Inject constructor(
 
     override suspend fun collect(): Map<String, Any> {
         val data = mutableMapOf<String, Any>()
-        
+
         try {
-            wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            wifiManager =
+                context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
 
             // Basic WiFi state - only needs ACCESS_WIFI_STATE
             if (hasWifiStatePermission()) {
                 data[WifiKeys.WIFI_ENABLED.toKey()] = wifiManager?.isWifiEnabled == true
             }
-            
+
             // Current connection info - needs ACCESS_WIFI_STATE and location permission
             if (hasWifiStatePermission() && hasLocationPermission()) {
                 val wifiInfo = wifiManager?.connectionInfo
@@ -56,20 +56,20 @@ class WifiCollector @Inject constructor(
                     data.putAll(getCurrentConnectionInfo(wifiInfo))
                 }
             }
-            
+
             // Scan for nearby networks - needs CHANGE_WIFI_STATE and location permission
             if (hasChangeWifiStatePermission() && hasLocationPermission() && timeManager.shouldCollectWiFi()) {
                 val scanResults = withTimeoutOrNull(5000) { // 5 second timeout
                     scanForNearbyNetworks()
                 } ?: emptyList()
                 data[WifiKeys.NEARBY_NETWORKS.toKey()] = scanResults
-                
+
                 // Only update collection time if we got scan results
                 if (scanResults.isNotEmpty()) {
                     timeManager.updateWiCTime()
                 }
             }
-            
+
         } catch (e: Exception) {
             // Silently handle error
         } catch (e: OutOfMemoryError) {
@@ -88,26 +88,21 @@ class WifiCollector @Inject constructor(
 
     private fun hasWifiStatePermission(): Boolean {
         return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_WIFI_STATE
+            context, Manifest.permission.ACCESS_WIFI_STATE
         ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun hasChangeWifiStatePermission(): Boolean {
         return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.CHANGE_WIFI_STATE
+            context, Manifest.permission.CHANGE_WIFI_STATE
         ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun hasLocationPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED ||
-        ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_COARSE_LOCATION
+            context, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
     }
 

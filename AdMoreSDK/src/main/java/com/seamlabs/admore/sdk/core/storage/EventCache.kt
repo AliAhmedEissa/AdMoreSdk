@@ -3,17 +3,15 @@ package com.seamlabs.admore.sdk.core.storage
 import com.seamlabs.admore.sdk.domain.model.Event
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * In-memory cache for events.
  */
-@Singleton
-class EventCache @Inject constructor() {
+
+class EventCache {
     private val cachedEvents = mutableListOf<Event>()
     private val mutex = Mutex()
-    
+
     /**
      * Adds an event to the cache.
      * @param event The event to add
@@ -23,7 +21,7 @@ class EventCache @Inject constructor() {
             cachedEvents.add(event)
         }
     }
-    
+
     /**
      * Removes an event from the cache.
      * @param event The event to remove
@@ -33,7 +31,7 @@ class EventCache @Inject constructor() {
             cachedEvents.remove(event)
         }
     }
-    
+
     /**
      * Gets all events in the cache.
      * @return List of cached events
@@ -43,7 +41,7 @@ class EventCache @Inject constructor() {
             cachedEvents.toList()
         }
     }
-    
+
     /**
      * Clears all events from the cache.
      */

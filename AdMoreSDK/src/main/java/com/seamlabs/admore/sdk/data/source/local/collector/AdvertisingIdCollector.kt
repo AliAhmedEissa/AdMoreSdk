@@ -5,12 +5,11 @@ import com.google.android.gms.ads.identifier.AdvertisingIdClient
 import com.seamlabs.admore.sdk.data.source.local.model.DeviceInfoKeys
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 /**
  * Collector for advertising ID.
  */
-class AdvertisingIdCollector @Inject constructor(
+class AdvertisingIdCollector(
     context: Context
 ) : BaseCollector(context) {
 

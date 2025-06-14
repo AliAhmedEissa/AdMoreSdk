@@ -2,15 +2,13 @@ package com.seamlabs.admore.sdk.data.source.local.collector
 
 import android.content.Context
 import android.content.SharedPreferences
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class CollectorTimeManager @Inject constructor(
+class CollectorTimeManager(
     private val context: Context
 ) {
-    private val prefs: SharedPreferences = context.getSharedPreferences("collector_timestamps", Context.MODE_PRIVATE)
-    
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences("collector_timestamps", Context.MODE_PRIVATE)
+
     companion object {
         private const val WIFI_LAST_COLLECTION = "wifi_last_collection"
         private const val BLUETOOTH_LAST_COLLECTION = "bluetooth_last_collection"

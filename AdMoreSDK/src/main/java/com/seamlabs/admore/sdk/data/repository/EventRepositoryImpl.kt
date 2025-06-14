@@ -12,12 +12,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * Implementation of EventRepository.
  */
-class EventRepositoryImpl @Inject constructor(
+class EventRepositoryImpl(
     private val apiService: ApiService,
     private val eventCache: EventCache,
     private val networkMonitor: NetworkMonitor,
@@ -29,7 +28,7 @@ class EventRepositoryImpl @Inject constructor(
 
     override suspend fun initialize(uniqueKey: String) {
         this.uniqueKey = uniqueKey
-        
+
         // Start network monitoring
         repositoryScope.launch {
             networkMonitor.isConnected.collectLatest { isConnected ->
@@ -47,15 +46,15 @@ class EventRepositoryImpl @Inject constructor(
             try {
                 // Encrypt data before sending
                 val encryptedData = dataEncryptor.encrypt(eventData)
-                
+
                 // Create request object
                 val request = EventRequest(
                     data = encryptedData,
                 )
-                
+
                 // Send to API
                 val response = apiService.sendEvent(request)
-                
+
                 // Check if success
                 if (!response.isSuccessful) {
                     // Cache event for retry
@@ -74,20 +73,20 @@ class EventRepositoryImpl @Inject constructor(
     private suspend fun sendCachedEvents() {
         // Get all cached events
         val events = eventCache.getEvents()
-        
+
         for (event in events) {
             try {
                 // Encrypt data
                 val encryptedData = dataEncryptor.encrypt(event.data)
-                
+
                 // Create request
                 val request = EventRequest(
                     data = encryptedData,
                 )
-                
+
                 // Send to API
                 val response = apiService.sendEvent(request)
-                
+
                 // Remove from cache if successful
                 if (response.isSuccessful) {
                     eventCache.removeEvent(event)

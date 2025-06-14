@@ -2,12 +2,11 @@ package com.seamlabs.admore.sdk.domain.usecase
 
 import com.seamlabs.admore.sdk.domain.repository.DeviceDataRepository
 import com.seamlabs.admore.sdk.domain.repository.EventRepository
-import javax.inject.Inject
 
 /**
  * Use case for initializing the SDK.
  */
-class InitializeSDKUseCase @Inject constructor(
+class InitializeSDKUseCase(
     private val eventRepository: EventRepository,
     private val deviceDataRepository: DeviceDataRepository
 ) {

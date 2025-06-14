@@ -2,6 +2,8 @@ package com.seamlabs.admore.sdk.data.source.local.model
 
 enum class NetworkKeys(val key: String) {
     // Basic connection info
+    PHONE_STATE_PERMISSION("phone_state_permission"),
+    NETWORK_STATE_PERMISSION("network_state_permission"),
     CONNECTION_TYPE("connection_type"),
     IS_CONNECTED("is_connected"),
     
