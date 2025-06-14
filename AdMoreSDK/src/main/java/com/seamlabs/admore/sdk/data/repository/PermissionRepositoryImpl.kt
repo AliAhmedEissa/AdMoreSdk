@@ -6,17 +6,14 @@ import androidx.core.content.ContextCompat
 import com.seamlabs.admore.sdk.data.source.local.PermissionChecker
 import com.seamlabs.admore.sdk.domain.model.Permission
 import com.seamlabs.admore.sdk.domain.repository.PermissionRepository
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import javax.inject.Inject
 
 /**
  * Implementation of PermissionRepository.
  */
-class PermissionRepositoryImpl @Inject constructor(
-    private val context: Context,
-    private val permissionChecker: PermissionChecker
+class PermissionRepositoryImpl(
+    private val context: Context, private val permissionChecker: PermissionChecker
 ) : PermissionRepository {
     private val permissionsFlow = MutableStateFlow<List<Permission>>(emptyList())
 
@@ -42,11 +39,10 @@ class PermissionRepositoryImpl @Inject constructor(
     private fun updateGrantedPermissions() {
         val grantedPermissions = Permission.entries.filter { permission ->
             ContextCompat.checkSelfPermission(
-                context,
-                permission.manifestPermission
+                context, permission.manifestPermission
             ) == PackageManager.PERMISSION_GRANTED
         }
-        
+
         permissionsFlow.value = grantedPermissions
     }
 }

@@ -18,19 +18,22 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
-import javax.inject.Inject
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.coroutines.resume
 
 /**
  * Collector for Bluetooth data.
  */
-class BluetoothCollector @Inject constructor(
-    context: Context,
-    private val timeManager: CollectorTimeManager
+class BluetoothCollector(
+    context: Context, private val timeManager: CollectorTimeManager
 ) : PermissionRequiredCollector(
     context,
-    setOf(Permission.BLUETOOTH, Permission.BLUETOOTH_ADMIN, Permission.BLUETOOTH_SCAN, Permission.BLUETOOTH_CONNECT)
+    setOf(
+        Permission.BLUETOOTH,
+        Permission.BLUETOOTH_ADMIN,
+        Permission.BLUETOOTH_SCAN,
+        Permission.BLUETOOTH_CONNECT
+    )
 ) {
 
     private var bluetoothAdapter: BluetoothAdapter? = null
@@ -41,21 +44,15 @@ class BluetoothCollector @Inject constructor(
     override fun isPermissionGranted(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.BLUETOOTH_SCAN
+                context, Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                context, Manifest.permission.BLUETOOTH_SCAN
             ) == PackageManager.PERMISSION_GRANTED
         } else {
             ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.BLUETOOTH
-            ) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.BLUETOOTH_ADMIN
+                context, Manifest.permission.BLUETOOTH
+            ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                context, Manifest.permission.BLUETOOTH_ADMIN
             ) == PackageManager.PERMISSION_GRANTED
         }
     }
@@ -65,7 +62,8 @@ class BluetoothCollector @Inject constructor(
             return emptyMap()
         }
 
-        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+        val bluetoothManager =
+            context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
         bluetoothAdapter = bluetoothManager?.adapter
 
         if (bluetoothAdapter == null) {
@@ -75,10 +73,10 @@ class BluetoothCollector @Inject constructor(
         val data = mutableMapOf<String, Any>()
         data[BluetoothKeys.BLUETOOTH_ENABLED.toKey()] = bluetoothAdapter?.isEnabled == true
         data[BluetoothKeys.BLUETOOTH_ADDRESS.toKey()] = getBluetoothAddress(bluetoothAdapter)
-        
+
         // Get bonded devices
         data[BluetoothKeys.BLUETOOTH_DEVICES.toKey()] = getBondedDevices(bluetoothAdapter)
-        
+
         // Scan for nearby devices if we have scan permission
         if (hasScanPermission()) {
             // Wait for scan results with timeout
@@ -92,20 +90,18 @@ class BluetoothCollector @Inject constructor(
         if (data.containsKey(BluetoothKeys.NEARBY_DEVICES.toKey())) {
             timeManager.updateBhCTime()
         }
-        
+
         return data
     }
 
     private fun hasScanPermission(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.BLUETOOTH_SCAN
+                context, Manifest.permission.BLUETOOTH_SCAN
             ) == PackageManager.PERMISSION_GRANTED
         } else {
             ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.BLUETOOTH
+                context, Manifest.permission.BLUETOOTH
             ) == PackageManager.PERMISSION_GRANTED
         }
     }
@@ -115,8 +111,7 @@ class BluetoothCollector @Inject constructor(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 "redacted_in_android_12_plus"
             } else {
-                @Suppress("DEPRECATION")
-                bluetoothAdapter?.address ?: "unknown"
+                @Suppress("DEPRECATION") bluetoothAdapter?.address ?: "unknown"
             }
         } catch (e: SecurityException) {
             "permission_error"
@@ -190,14 +185,14 @@ class BluetoothCollector @Inject constructor(
             try {
                 isScanning = true
                 bluetoothLeScanner?.startScan(scanCallback)
-                
+
                 // Scan for 5 seconds
                 GlobalScope.launch {
                     delay(5000)
                     if (isScanning) {
                         bluetoothLeScanner?.stopScan(scanCallback)
                         isScanning = false
-                        
+
                         val devices = discoveredDevices.map { device ->
                             mapOf(
                                 BluetoothKeys.DEVICE_NAME.toKey() to (device.name ?: "unknown"),

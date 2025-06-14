@@ -1,84 +1,83 @@
 package com.seamlabs.admore.sdk.di
 
-import android.content.Context
+import com.seamlabs.admore.sdk.BuildConfig
 import com.seamlabs.admore.sdk.core.network.ApiService
 import com.seamlabs.admore.sdk.core.network.CertificatePinner
 import com.seamlabs.admore.sdk.core.network.NetworkMonitor
 import com.seamlabs.admore.sdk.core.network.RetryInterceptor
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.koin.android.ext.koin.androidContext
+import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
-import javax.inject.Singleton
 
-@Module
-@InstallIn(SingletonComponent::class)
-object NetworkModule {
+val networkModule = module {
 
-    private const val BASE_URL = "http://209.38.231.139:8080/"
-    private const val TIMEOUT = 30L
-
-    @Provides
-    @Singleton
-    fun provideLoggingInterceptor(): HttpLoggingInterceptor {
-        return HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+    single<HttpLoggingInterceptor> {
+        HttpLoggingInterceptor().apply {
+            // Only enable detailed logging in debug builds to avoid performance issues
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.HEADERS // Changed from BODY to HEADERS to avoid stream issues
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
         }
     }
 
-    @Provides
-    @Singleton
-    fun provideCertificatePinner(): CertificatePinner {
-        return CertificatePinner()
+    single { CertificatePinner() }
+
+    single { RetryInterceptor() }
+
+    single<OkHttpClient> {
+        OkHttpClient.Builder().apply {
+            // Add retry interceptor first, then logging interceptor
+            addInterceptor(get<RetryInterceptor>())
+
+            // Only add logging interceptor in debug builds
+          //  if (BuildConfig.DEBUG) {
+                addInterceptor(get<HttpLoggingInterceptor>())
+       //     }
+
+            // Only add certificate pinner if it's not empty (i.e., not for IP addresses)
+            val certificatePinner = get<CertificatePinner>().getPinner()
+            if (certificatePinner.pins.isNotEmpty()) {
+                certificatePinner(certificatePinner)
+            }
+
+            connectTimeout(30L, TimeUnit.SECONDS)
+            readTimeout(30L, TimeUnit.SECONDS)
+            writeTimeout(30L, TimeUnit.SECONDS)
+
+            // Add connection pooling for better performance
+            connectionPool(okhttp3.ConnectionPool(5, 5, TimeUnit.MINUTES))
+
+            // Disable automatic retries to avoid conflicts with our custom retry interceptor
+            retryOnConnectionFailure(false)
+        }.build()
     }
 
-    @Provides
-    @Singleton
-    fun provideRetryInterceptor(): RetryInterceptor {
-        return RetryInterceptor()
-    }
+    single<Retrofit> {
+        // Construct the base URL properly
+        val baseUrl = if (BuildConfig.host.startsWith("http://") || BuildConfig.host.startsWith("https://")) {
+            // If host already contains scheme, use it directly
+            BuildConfig.host.let { if (it.endsWith("/")) it else "$it/" }
+        } else {
+            // If host doesn't contain scheme, add http:// and trailing slash
+            "http://${BuildConfig.host}/"
+        }
 
-    @Provides
-    @Singleton
-    fun provideOkHttpClient(
-        loggingInterceptor: HttpLoggingInterceptor,
-        certificatePinner: CertificatePinner,
-        retryInterceptor: RetryInterceptor
-    ): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
-            .addInterceptor(retryInterceptor)
-            .certificatePinner(certificatePinner.getPinner())
-            .connectTimeout(TIMEOUT, TimeUnit.SECONDS)
-            .readTimeout(TIMEOUT, TimeUnit.SECONDS)
-            .writeTimeout(TIMEOUT, TimeUnit.SECONDS)
-            .build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(okHttpClient)
+        Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .client(get())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
 
-    @Provides
-    @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService {
-        return retrofit.create(ApiService::class.java)
+    single<ApiService> {
+        get<Retrofit>().create(ApiService::class.java)
     }
 
-    @Provides
-    @Singleton
-    fun provideNetworkMonitor(context: Context): NetworkMonitor {
-        return NetworkMonitor(context)
-    }
+    single { NetworkMonitor(androidContext()) }
 }

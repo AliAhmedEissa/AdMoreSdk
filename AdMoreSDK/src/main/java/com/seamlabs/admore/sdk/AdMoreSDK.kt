@@ -2,7 +2,6 @@ package com.seamlabs.admore.sdk
 
 import android.content.Context
 import com.seamlabs.admore.sdk.core.logger.Logger
-import com.seamlabs.admore.sdk.di.DaggerAdMoreComponent
 import com.seamlabs.admore.sdk.domain.usecase.CollectDeviceDataUseCase
 import com.seamlabs.admore.sdk.domain.usecase.InitializeSDKUseCase
 import com.seamlabs.admore.sdk.domain.usecase.SendEventUseCase
@@ -12,21 +11,20 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import javax.inject.Singleton
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 /**
  * Main entry point for the AdMore SDK.
  * This class provides methods for initializing the SDK and sending events.
  */
-@Singleton
-class AdMoreSDK @Inject constructor(
-    private val context: Context,
-    private val initializeSDKUseCase: InitializeSDKUseCase,
-    private val sendEventUseCase: SendEventUseCase,
-    private val collectDeviceDataUseCase: CollectDeviceDataUseCase,
-    private val logger: Logger
-) {
+class AdMoreSDK : KoinComponent {
+    private val initializeSDKUseCase: InitializeSDKUseCase by inject()
+    private val sendEventUseCase: SendEventUseCase by inject()
+    private val collectDeviceDataUseCase: CollectDeviceDataUseCase by inject()
+    private val logger: Logger by inject()
+
     private val sdkScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var isInitialized = false
     private var uniqueKey: String? = null
@@ -66,11 +64,17 @@ class AdMoreSDK @Inject constructor(
 
         private fun getInstance(context: Context): AdMoreSDK {
             return instance ?: synchronized(this) {
-                instance ?: DaggerAdMoreComponent.builder()
-                    .applicationContext(context.applicationContext)
-                    .build()
-                    .adMoreSDK()
-                    .also { instance = it }
+                instance ?: run {
+                    // Initialize Koin if not already initialized
+                    val koinApp = org.koin.core.context.GlobalContext.getOrNull()
+                    if (koinApp == null) {
+                        org.koin.core.context.startKoin {
+                            androidContext(context.applicationContext)
+                            modules(com.seamlabs.admore.sdk.di.adMoreModules)
+                        }
+                    }
+                    AdMoreSDK().also { instance = it }
+                }
             }
         }
     }

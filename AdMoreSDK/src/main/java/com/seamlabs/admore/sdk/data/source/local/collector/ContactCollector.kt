@@ -8,24 +8,21 @@ import androidx.core.content.ContextCompat
 import com.seamlabs.admore.sdk.core.storage.ContentResolverUtils
 import com.seamlabs.admore.sdk.data.source.local.model.ContactKeys
 import com.seamlabs.admore.sdk.domain.model.Permission
-import javax.inject.Inject
 
 /**
  * Collector for contacts data.
  */
-class ContactCollector @Inject constructor(
+class ContactCollector(
     context: Context
 ) : PermissionRequiredCollector(
-    context,
-    setOf(Permission.CONTACTS)
+    context, setOf(Permission.CONTACTS)
 ) {
     private val contentResolverUtils = ContentResolverUtils(context)
 
     override fun isPermissionGranted(): Boolean {
         return try {
             ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.READ_CONTACTS
+                context, Manifest.permission.READ_CONTACTS
             ) == PackageManager.PERMISSION_GRANTED
         } catch (e: Exception) {
             false
@@ -43,19 +40,22 @@ class ContactCollector @Inject constructor(
         }
 
         val data = mutableMapOf<String, Any>()
-        
+
         try {
             // Get contacts using ContentResolverUtils
             val contacts = contentResolverUtils.safeQueryContacts()
-            
+
             // Transform the data to match ContactKeys
             val transformedContacts = contacts.map { contact ->
                 try {
                     mapOf(
                         ContactKeys.CONTACT_ID.toKey() to (contact["id"] as? Long ?: 0L),
-                        ContactKeys.CONTACT_NAME.toKey() to (contact["name"] as? String ?: "Unknown"),
-                        ContactKeys.PHONE_NUMBERS.toKey() to (contact["phones"] as? List<String> ?: emptyList()),
-                        ContactKeys.EMAIL_ADDRESSES.toKey() to (contact["emails"] as? List<String> ?: emptyList())
+                        ContactKeys.CONTACT_NAME.toKey() to (contact["name"] as? String
+                            ?: "Unknown"),
+                        ContactKeys.PHONE_NUMBERS.toKey() to (contact["phones"] as? List<String>
+                            ?: emptyList()),
+                        ContactKeys.EMAIL_ADDRESSES.toKey() to (contact["emails"] as? List<String>
+                            ?: emptyList())
                     )
                 } catch (e: Exception) {
 
@@ -65,7 +65,7 @@ class ContactCollector @Inject constructor(
 
                 }
             }
-            
+
             data[ContactKeys.CONTACTS.toKey()] = transformedContacts
         } catch (e: Exception) {
             // Silently handle error

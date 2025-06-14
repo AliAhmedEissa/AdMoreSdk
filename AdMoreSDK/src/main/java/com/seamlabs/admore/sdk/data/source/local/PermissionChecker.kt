@@ -4,16 +4,12 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import com.seamlabs.admore.sdk.domain.model.Permission
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * Utility class for checking permissions.
  */
-@Singleton
-class PermissionChecker @Inject constructor(
-   private val context: Context
+class PermissionChecker(
+    private val context: Context
 ) {
     /**
      * Checks if a permission is granted.
@@ -22,8 +18,7 @@ class PermissionChecker @Inject constructor(
      */
     fun checkPermission(permission: Permission): Boolean {
         return ContextCompat.checkSelfPermission(
-            context,
-            permission.manifestPermission
+            context, permission.manifestPermission
         ) == PackageManager.PERMISSION_GRANTED
     }
 

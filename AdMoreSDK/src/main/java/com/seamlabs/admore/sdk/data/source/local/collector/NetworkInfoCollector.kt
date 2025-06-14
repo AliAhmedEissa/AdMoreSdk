@@ -7,23 +7,20 @@ import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
-import android.net.NetworkInfo
 import android.os.Build
 import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
 import com.seamlabs.admore.sdk.data.source.local.model.NetworkKeys
 import com.seamlabs.admore.sdk.domain.model.Permission
-import javax.inject.Inject
 
 /**
  * Collector for network information.
  * Handles partial permission scenarios gracefully.
  */
-class NetworkInfoCollector @Inject constructor(
+class NetworkInfoCollector(
     context: Context
 ) : PermissionRequiredCollector(
-    context,
-    setOf(Permission.PHONE_STATE, Permission.NETWORK_STATE)
+    context, setOf(Permission.PHONE_STATE, Permission.NETWORK_STATE)
 ) {
 
     override fun isPermissionGranted(): Boolean {
@@ -36,8 +33,7 @@ class NetworkInfoCollector @Inject constructor(
      */
     private fun hasPhoneStatePermission(): Boolean {
         return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.READ_PHONE_STATE
+            context, Manifest.permission.READ_PHONE_STATE
         ) == PackageManager.PERMISSION_GRANTED
     }
 
@@ -46,8 +42,7 @@ class NetworkInfoCollector @Inject constructor(
      */
     private fun hasNetworkStatePermission(): Boolean {
         return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_NETWORK_STATE
+            context, Manifest.permission.ACCESS_NETWORK_STATE
         ) == PackageManager.PERMISSION_GRANTED
     }
 
@@ -82,7 +77,8 @@ class NetworkInfoCollector @Inject constructor(
      */
     private fun collectNetworkStateInfo(): Map<String, Any> {
         return try {
-            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val connectivityManager =
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val data = mutableMapOf<String, Any>()
 
             // Basic connection info
@@ -186,39 +182,73 @@ class NetworkInfoCollector @Inject constructor(
         }
     }
 
-    private fun getNetworkCapabilities(connectivityManager: ConnectivityManager, network: Network): Map<String, Any> {
+    private fun getNetworkCapabilities(
+        connectivityManager: ConnectivityManager,
+        network: Network
+    ): Map<String, Any> {
         return try {
-            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return emptyMap()
+            val capabilities =
+                connectivityManager.getNetworkCapabilities(network) ?: return emptyMap()
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 mapOf(
-                    NetworkKeys.HAS_INTERNET.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET),
-                    NetworkKeys.HAS_VALIDATED.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED),
-                    NetworkKeys.HAS_CAPTIVE_PORTAL.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL),
-                    NetworkKeys.HAS_NOT_RESTRICTED.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED),
-                    NetworkKeys.HAS_NOT_ROAMING.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_ROAMING),
-                    NetworkKeys.HAS_NOT_METERED.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED),
-                    NetworkKeys.HAS_NOT_SUSPENDED.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_SUSPENDED),
-                    NetworkKeys.HAS_NOT_VPN.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN),
-                    NetworkKeys.DOWNLOAD_SPEED.toKey() to capabilities.getLinkDownstreamBandwidthKbps(),
-                    NetworkKeys.UPLOAD_SPEED.toKey() to capabilities.getLinkUpstreamBandwidthKbps(),
-                    NetworkKeys.SIGNAL_STRENGTH.toKey() to capabilities.getSignalStrength()
+                    NetworkKeys.HAS_INTERNET.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_INTERNET
+                    ),
+                    NetworkKeys.HAS_VALIDATED.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_VALIDATED
+                    ),
+                    NetworkKeys.HAS_CAPTIVE_PORTAL.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL
+                    ),
+                    NetworkKeys.HAS_NOT_RESTRICTED.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED
+                    ),
+                    NetworkKeys.HAS_NOT_ROAMING.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_NOT_ROAMING
+                    ),
+                    NetworkKeys.HAS_NOT_METERED.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_NOT_METERED
+                    ),
+                    NetworkKeys.HAS_NOT_SUSPENDED.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_NOT_SUSPENDED
+                    ),
+                    NetworkKeys.HAS_NOT_VPN.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_NOT_VPN
+                    ),
+                    NetworkKeys.DOWNLOAD_SPEED.toKey() to capabilities.linkDownstreamBandwidthKbps,
+                    NetworkKeys.UPLOAD_SPEED.toKey() to capabilities.linkUpstreamBandwidthKbps,
+                    NetworkKeys.SIGNAL_STRENGTH.toKey() to capabilities.signalStrength
                 )
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 mapOf(
-                    NetworkKeys.HAS_INTERNET.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET),
-                    NetworkKeys.HAS_VALIDATED.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED),
-                    NetworkKeys.HAS_CAPTIVE_PORTAL.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL),
-                    NetworkKeys.HAS_NOT_RESTRICTED.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED),
-                    NetworkKeys.HAS_NOT_ROAMING.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_ROAMING),
+                    NetworkKeys.HAS_INTERNET.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_INTERNET
+                    ),
+                    NetworkKeys.HAS_VALIDATED.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_VALIDATED
+                    ),
+                    NetworkKeys.HAS_CAPTIVE_PORTAL.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL
+                    ),
+                    NetworkKeys.HAS_NOT_RESTRICTED.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED
+                    ),
+                    NetworkKeys.HAS_NOT_ROAMING.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_NOT_ROAMING
+                    ),
                     NetworkKeys.DOWNLOAD_SPEED.toKey() to 0,
                     NetworkKeys.UPLOAD_SPEED.toKey() to 0,
                     NetworkKeys.SIGNAL_STRENGTH.toKey() to 0
                 )
             } else {
                 mapOf(
-                    NetworkKeys.HAS_INTERNET.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET),
-                    NetworkKeys.HAS_VALIDATED.toKey() to capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED),
+                    NetworkKeys.HAS_INTERNET.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_INTERNET
+                    ),
+                    NetworkKeys.HAS_VALIDATED.toKey() to capabilities.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_VALIDATED
+                    ),
                     NetworkKeys.DOWNLOAD_SPEED.toKey() to 0,
                     NetworkKeys.UPLOAD_SPEED.toKey() to 0,
                     NetworkKeys.SIGNAL_STRENGTH.toKey() to 0
@@ -245,7 +275,10 @@ class NetworkInfoCollector @Inject constructor(
         )
     }
 
-    private fun getNetworkInfo(connectivityManager: ConnectivityManager, network: Network): Map<String, Any> {
+    private fun getNetworkInfo(
+        connectivityManager: ConnectivityManager,
+        network: Network
+    ): Map<String, Any> {
         return try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val networkInfo = connectivityManager.getNetworkInfo(network) ?: return emptyMap()
@@ -276,7 +309,8 @@ class NetworkInfoCollector @Inject constructor(
     @SuppressLint("MissingPermission")
     private fun getCellularNetworkInfo(): Map<String, Any> {
         return try {
-            val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            val telephonyManager =
+                context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 
             mapOf(
                 NetworkKeys.SUBTYPE.toKey() to telephonyManager.networkType,

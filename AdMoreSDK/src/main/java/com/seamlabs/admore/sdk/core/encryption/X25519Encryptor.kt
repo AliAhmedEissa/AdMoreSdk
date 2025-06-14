@@ -11,15 +11,12 @@ import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
-import javax.inject.Inject
-import javax.inject.Singleton
 import com.seamlabs.admore.sdk.BuildConfig
 
 /**
  * Implementation of DataEncryptor using hybrid RSA/AES encryption.
  */
-@Singleton
-class X25519Encryptor @Inject constructor() : DataEncryptor {
+class X25519Encryptor : DataEncryptor {
 
     private val gson = Gson()
     private val publicKeyBase64 = BuildConfig.publicKeyBase64

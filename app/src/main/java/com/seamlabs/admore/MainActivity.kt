@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
             }
 
             // Initialize AdMore SDK with your unique key
-            AdMoreSDK.initialize(this, "YOUR_UNIQUE_KEY", callback = object : InitCallback {
+            AdMoreSDK.initialize(this, "wdoasiiosaf", callback = object : InitCallback {
                 override fun onSuccess() {
                     lifecycleScope.launch {
                         AdMoreSDK.sendEvent(eventName = "event_name",

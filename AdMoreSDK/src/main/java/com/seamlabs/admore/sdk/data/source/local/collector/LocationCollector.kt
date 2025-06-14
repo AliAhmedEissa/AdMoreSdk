@@ -8,27 +8,22 @@ import android.location.LocationManager
 import androidx.core.content.ContextCompat
 import com.seamlabs.admore.sdk.data.source.local.model.LocationKeys
 import com.seamlabs.admore.sdk.domain.model.Permission
-import javax.inject.Inject
 
 /**
  * Collector for location data.
  */
-class LocationCollector @Inject constructor(
+class LocationCollector(
     context: Context
 ) : PermissionRequiredCollector(
-    context,
-    setOf(Permission.LOCATION_FINE, Permission.LOCATION_COARSE)
+    context, setOf(Permission.LOCATION_FINE, Permission.LOCATION_COARSE)
 ) {
 
     override fun isPermissionGranted(): Boolean {
         return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
+            context, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     override suspend fun collect(): Map<String, Any> {

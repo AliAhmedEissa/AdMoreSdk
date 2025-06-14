@@ -1,7 +1,6 @@
-# jitpack.yml - Place this in your repository root
-jdk:
-  - openjdk17
-
-install:
-  # Only build and publish the SDK module, skip the app module
-  - ./gradlew :AdMoreSDK:publishToMavenLocal -x lint -x test --stacktrace
+  jdk:
+    - openjdk11
+  before_install:
+    - ./gradlew clean
+  install:
+    - ./gradlew :admore-sdk:publishToMavenLocal

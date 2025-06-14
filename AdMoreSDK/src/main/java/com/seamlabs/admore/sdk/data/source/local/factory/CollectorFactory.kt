@@ -13,7 +13,7 @@ interface CollectorFactory {
      * Gets all base collectors that don't require permissions.
      * @return List of base collectors
      */
-    fun getBaseCollectors(): List<@JvmSuppressWildcards BaseCollector>
+    fun getBaseCollectors(): List<BaseCollector>
 
     /**
      * Gets collectors that require a specific permission.
